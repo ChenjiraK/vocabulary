@@ -1,0 +1,36 @@
+# OS / editor
+.DS_Store
+.vscode/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Backend (Go)
+/be/vocabulary
+/be/bin/
+/be/tmp/
+/be/*.test
+/be/coverage.out
+
+# Frontend (Next.js / Node)
+/fe/node_modules/
+/fe/.next/
+/fe/out/
+/fe/dist/
+/fe/build/
+/fe/.vercel/
+/fe/npm-debug.log*
+/fe/yarn-debug.log*
+/fe/yarn-error.log*
+/fe/pnpm-debug.log*
+
+# Package manager caches
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz

@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-page: #fefcf6;
+  --color-primary-blue: #1b3059;
+  --color-success: #008000;
+  --color-incorrect: #ff0000;
+  --font-display: "Noto Sans Thai", "Th Sarabun New", Arial, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  --background: #f7f8fb;
+  --foreground: #18212f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-display);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
