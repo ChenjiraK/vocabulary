@@ -1,6 +1,10 @@
+"use client";
+
 import MainPage from "../components/MainPage";
 import Image from "next/image";
+import LoginModal from "../components/modal/LoginModal";
 import bookIcon from "@/public/images/book-icon.png";
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock as clockIcon } from "@fortawesome/free-regular-svg-icons/faClock";
 import { faStar as starIcon } from "@fortawesome/free-solid-svg-icons/faStar";
@@ -19,6 +23,8 @@ const ruleItems = [
 ];
 
 export default function GamePage() {
+  const [isOpenLoginModal, setIsOpenLoginModal] = useState(false);
+
   return (
     <MainPage>
       <div className="bg-page flex min-h-screen items-center justify-center px-8 py-10">
@@ -40,7 +46,7 @@ export default function GamePage() {
             />
           </div>
 
-          <div className="mt-9 flex w-full max-w-[270px] flex-col gap-4 text-left text-[15px] text-[#172449]">
+          <div className="mt-9 flex w-full max-w-67.5 flex-col gap-4 text-left text-[15px] text-[#172449]">
             {ruleItems.map((item) => (
               <div key={item.text} className="flex items-center gap-3">
                 <span className="flex shrink-0 items-center justify-center">
@@ -54,7 +60,8 @@ export default function GamePage() {
             ))}
           </div>
 
-          <button className="mt-9 h-14 w-full max-w-[300px] rounded-2xl bg-[#102b61] text-xl font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_10px_rgba(16,43,97,0.2)] transition hover:bg-[#0b2453]">
+          <button className="mt-9 h-14 w-full max-w-75 rounded-2xl bg-[#102b61] text-xl font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_10px_rgba(16,43,97,0.2)] transition hover:bg-[#0b2453]" 
+          onClick={() => setIsOpenLoginModal(true)}>
             Start
           </button>
 
@@ -62,6 +69,10 @@ export default function GamePage() {
             How to play
           </button>
         </div>
+        <LoginModal
+          isOpen={isOpenLoginModal}
+          onClose={() => setIsOpenLoginModal(false)}
+        />
       </div>
     </MainPage>
   );

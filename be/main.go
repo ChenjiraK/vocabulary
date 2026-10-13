@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"vocabulary/database"
+	"vocabulary/middlewares"
 	"vocabulary/route"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,7 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
 	route.RegisterAPIRoutes(router, db)
 
 	port := os.Getenv("APP_PORT")
