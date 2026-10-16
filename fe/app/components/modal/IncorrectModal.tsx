@@ -1,11 +1,13 @@
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Typography,
 } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import MainButton from "@/app/components/ui/MainButton";
 
 type ModalProps = {
   isOpen: boolean;
@@ -22,18 +24,22 @@ export default function IncorrectModal({ isOpen, onClose }: ModalProps) {
         fullWidth
         maxWidth="xs"
       >
-        <DialogTitle id="submission-result-title" sx={{ fontSize: "60px" }}>
-          Try again
-        </DialogTitle>
         <DialogContent>
-          <Typography id="submission-result-description" color="text.secondary">
+          <div className="flex flex-col items-center justify-center">
+            <span className="text-[#f02b5d] mt-3">
+              <FontAwesomeIcon icon={faCircleXmark} className="text-9xl" />
+            </span>
+          </div>
+          <Typography
+            id="submission-result-description"
+            color="text.secondary"
+            className="pt-7 text-center text-lg font-semibold"
+          >
             Sorry, that's not the correct word. Please try again.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={onClose} autoFocus>
-            Close
-          </Button>
+          <MainButton onClick={onClose}>Try Again</MainButton>
         </DialogActions>
       </Dialog>
     </div>

@@ -4,19 +4,22 @@ import { type FormEvent, useState } from "react";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, IconButton, InputAdornment, TextField } from "@mui/material";
+import { useRouter } from "next/navigation";
 import { loginWithPassword } from "@/app/services/auth.service";
 import { useAuthStore } from "@/app/stores/auth.store";
+import MainButton from "@/app/components/ui/MainButton";
 
 interface FormEmailPasswordProps {
   onBack?: () => void;
 }
 
 export default function FormEmailPassword({ onBack }: FormEmailPasswordProps) {
-  const [email, setEmail] = useState("test@email.com");
+  const [email, setEmail] = useState("test@example.com");
   const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
   const setLoginData = useAuthStore((state) => state.setLoginData);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -31,6 +34,7 @@ export default function FormEmailPassword({ onBack }: FormEmailPasswordProps) {
       };
       const data = await loginWithPassword(payload);
       setLoginData(data);
+      router.push("/game");
     } catch (err) {
       console.error(err);
       setError("Login failed. Please check your email and password.");
@@ -69,7 +73,9 @@ export default function FormEmailPassword({ onBack }: FormEmailPasswordProps) {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     edge="end"
                     onClick={() => setShowPassword((value) => !value)}
                   >
@@ -84,23 +90,21 @@ export default function FormEmailPassword({ onBack }: FormEmailPasswordProps) {
           }}
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="flex gap-5">
-          <Button
+        <div className="flex gap-5 mt-5">
+          <button
             type="submit"
-            variant="contained"
-            disabled={isLoading}
-            sx={{
-              width: "100%",
-              borderRadius: "40px",
-              textTransform: "none",
-              fontWeight: 600,
-              py: 1.25,
-              my: 1.5,
-            }}
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-[40px] border border-[#b9c0c9] bg-primary-blue text-sm font-bold text-white shadow-sm"
           >
             {isLoading ? "Logging in..." : "Login"}
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-[40px] border border-[#b9c0c9] bg-white text-sm font-bold text-slate-950 shadow-sm"
+          >
+            Back
+          </button>
+          {/* <Button
             type="button"
             variant="outlined"
             disabled={isLoading}
@@ -115,7 +119,7 @@ export default function FormEmailPassword({ onBack }: FormEmailPasswordProps) {
             }}
           >
             Back
-          </Button>
+          </Button> */}
         </div>
       </form>
     </div>

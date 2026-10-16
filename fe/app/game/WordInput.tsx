@@ -1,21 +1,14 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useState } from "react";
-import MainPage from "../components/MainPage";
-import CircleCountdown from "../components/CircleCountdown";
-
-export type GameWord = {
-  id: number;
-  vocab: string;
-  meaning: string;
-  synonyms: string;
-  status: "" | "success" | "failed";
-  thai: string;
-  type_of_speech: string;
-};
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faForward } from "@fortawesome/free-solid-svg-icons";
+import MainPage from "../components/ui/MainPage";
+//import CircleCountdown from "../components/CircleCountdown";
+import type { GameVocabResponse } from "@/app/type/GameType";
 
 type WordInputProps = {
-  word: GameWord;
+  word: GameVocabResponse;
   degree: number;
   onSubmit: (inputWord: string) => void;
 };
@@ -23,36 +16,36 @@ type WordInputProps = {
 export default function WordInput({ word, degree, onSubmit }: WordInputProps) {
   const [inputWord, setInputWord] = useState("");
   const [isShowHint, setIsShowHint] = useState(false);
-  const answer = word.vocab;
-  const answerCharacters = Array.from(answer);
+  const lengthOfWord = word.length_of_word ?? 0;
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     const nextValue = event.target.value
       .toUpperCase()
       .replace(/[^A-Z]/g, "")
-      .slice(0, answerCharacters.length);
+      .slice(0, lengthOfWord);
 
     setInputWord(nextValue);
 
-    if (nextValue.length === answerCharacters.length) {
+    if (lengthOfWord > 0 && nextValue.length === lengthOfWord) {
       onSubmit(nextValue);
     }
   }
 
   function classInputWord() {
-    if (inputWord.length === answerCharacters.length) {
-      if (inputWord === answer.toUpperCase()) {
-        return "border-[#4cb131]";
-      } else {
-        return "border-[#f02b5d]";
-      }
+    if (word.status === "success") {
+      return "border-[#4cb131]";
+    }
+    if (word.status === "failed") {
+      return "border-[#f02b5d]";
     }
     return "border-[#aeb4bd]";
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSubmit(inputWord);
+    if (lengthOfWord > 0 && inputWord.length === lengthOfWord) {
+      onSubmit(inputWord);
+    }
   }
 
   return (
@@ -70,25 +63,30 @@ export default function WordInput({ word, degree, onSubmit }: WordInputProps) {
           <p className="text-primary-blue text-center text-3xl font-semibold">
             Level {degree}
           </p>
-          <CircleCountdown />
+          {/* <CircleCountdown /> */}
         </div>
 
         <section className="flex flex-1 flex-col items-center px-5 pt-16 text-center">
           <p className="text-[17px] leading-6 font-medium text-slate-950">
             <span className="text-primary-blue font-bold">
-              ({word.type_of_speech})
+              ({word.parts_of_speech})
             </span>{" "}
             {word.meaning}
           </p>
-
+          {word.synonyms && (
+            <p className="text-[12px] leading-6 font-medium text-stone-500">
+              <span className="text-primary-blue font-bold">Synonyms:</span>{" "}
+              {word.synonyms}
+            </p>
+          )}
           <form className="relative mt-16 w-full px-5" onSubmit={handleSubmit}>
             <label
               htmlFor="input-word"
               className="flex flex-wrap justify-center gap-2"
             >
-              {answerCharacters.map((character, index) => (
+              {Array.from({ length: lengthOfWord }, (_, index) => (
                 <div
-                  key={`${character}-${index}`}
+                  key={`word-${index}`}
                   className={`flex aspect-square min-h-12 w-12 max-w-18 min-w-12 items-center justify-center rounded-md border-2 bg-white text-2xl font-bold text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] sm:h-18 sm:w-18 ${classInputWord()}`}
                 >
                   {inputWord[index] ?? ""}
@@ -99,13 +97,26 @@ export default function WordInput({ word, degree, onSubmit }: WordInputProps) {
               type="text"
               id="input-word"
               value={inputWord}
-              maxLength={answerCharacters.length}
+              maxLength={lengthOfWord}
               autoComplete="off"
               aria-label="answer"
               className="absolute inset-0 h-full w-full cursor-text opacity-0"
               onChange={handleInputChange}
             />
           </form>
+          {word.status === "success" && (
+            <button
+              type="button"
+              className="mt-20 flex h-10 w-36.25 items-center justify-center gap-2 rounded-md border bg-primary-blue text-white font-bold shadow-sm"
+              onClick={() => {}}
+            >
+              <FontAwesomeIcon
+                icon={faForward}
+                className="h-4 w-4 text-white"
+              />
+              NEXT WORD
+            </button>
+          )}
           {!isShowHint && (
             <button
               type="button"
@@ -124,15 +135,16 @@ export default function WordInput({ word, degree, onSubmit }: WordInputProps) {
               <div>
                 start with{" "}
                 <span className="font-bold text-emerald-700">
-                  {word.vocab[0].toUpperCase()}
+                  {word.start_letter.toUpperCase()}
                 </span>{" "}
                 and end with{" "}
                 <span className="font-bold text-emerald-700">
-                  {word.vocab[word.vocab.length - 1].toUpperCase()}
+                  {word.end_letter.toUpperCase()}
                 </span>
               </div>
-              <div className="mt-3 py-3 text-left font-bold">💡 meaning </div>
-              {word.thai ? word.thai : word.synonyms}
+              <div className="mt-3 py-3 text-left font-bold">
+                💡 ความหมาย: {word.thai}
+              </div>
             </div>
           )}
         </section>

@@ -74,10 +74,13 @@ type LeaderboardEntry struct {
 
 // vocabulary response สำหรับ api /game
 type GameVocabularyResponse struct {
-	ID            uint   `json:"id"`
-	LengthOfWord  int    `json:"length_of_word"` //length of field eng
-	PartsOfSpeech string `json:"parts_of_speech"`
-	Thai          string `json:"thai"`
-	Meaning       string `json:"meaning"`
-	Synonyms      string `json:"synonyms"`
+	ID             uint   `json:"id"`
+	LengthOfWord   int    `json:"length_of_word"` //length of field eng
+	PartsOfSpeech  string `json:"parts_of_speech"`
+	Thai           string `json:"thai"`
+	Meaning        string `json:"meaning"`
+	Synonyms       string `json:"synonyms"`
+	StartLetter    string `json:"start_letter"`
+	EndLetter      string `json:"end_letter"`
+	CorrectAnswers int64  `json:"correct_answers"`
 }

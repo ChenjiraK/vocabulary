@@ -1,6 +1,6 @@
 "use client";
 
-import MainPage from "../components/MainPage";
+import MainPage from "../components/ui/MainPage";
 import Image from "next/image";
 import LoginModal from "../components/modal/LoginModal";
 import bookIcon from "@/public/images/book-icon.png";
@@ -60,8 +60,10 @@ export default function GamePage() {
             ))}
           </div>
 
-          <button className="mt-9 h-14 w-full max-w-75 rounded-2xl bg-[#102b61] text-xl font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_10px_rgba(16,43,97,0.2)] transition hover:bg-[#0b2453]" 
-          onClick={() => setIsOpenLoginModal(true)}>
+          <button
+            className="mt-9 h-14 w-full max-w-75 rounded-2xl bg-[#102b61] text-xl font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_10px_rgba(16,43,97,0.2)] transition hover:bg-[#0b2453]"
+            onClick={() => setIsOpenLoginModal(true)}
+          >
             Start
           </button>
 

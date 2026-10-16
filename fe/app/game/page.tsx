@@ -1,74 +1,138 @@
 "use client";
 
-import { useState } from "react";
-import MainPage from "../components/MainPage";
+import { useEffect, useRef, useState } from "react";
+import MainPage from "../components/ui/MainPage";
 import IncorrectModal from "../components/modal/IncorrectModal";
 import SuccessModal from "../components/modal/SuccessModal";
-import WordInput, { type GameWord } from "./WordInput";
+import WordInput from "./WordInput";
+import type { GameVocabResponse } from "@/app/type/GameType";
+import { getVocab, submitVocabAnswer } from "@/app/services/game.service";
 
 type SubmissionResult = "correct" | "incorrect" | null;
 
 export default function GamePage() {
-  //TODO: use react-hook-form to handle form state and validation
   const [submissionResult, setSubmissionResult] =
     useState<SubmissionResult>(null);
+  const [gameResponse, setGameResponse] = useState<GameVocabResponse | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [round, setRound] = useState(0);
+  const submitting = useRef(false);
 
-  const word: GameWord = {
-    id: 1,
-    vocab: "brave",
-    meaning:
-      "giving you a benefit, a better position, or a higher chance of success",
-    synonyms: "Beneficial, Useful, Helpful, Profitable",
-    thai: "มีประโยชน์, เป็นประโยชน์, ได้เปรียบ",
-    type_of_speech: "Adjective",
-    status: "",
-  };
-  const degree = 1;
-  const compliments = [
-    "Great job!", 
-    "You got it!", 
-    "Awesome!", 
-    "You're a genius!", 
-    "You're Great!",
-    "You're Amazing!",
-    "You're Excellent!",
-    "Perfect!",
-  ];
-  const title = compliments[Math.floor(Math.random() * compliments.length)];
-  
+  useEffect(() => {
+    let cancelled = false;
 
-  function handleSubmit(inputWord: string) {
-    if (inputWord.toLowerCase() === word.vocab.toLowerCase()) {
-      setSubmissionResult("correct");
-      //TODO: update word status='success' to api
-      return true;
+    async function loadWord() {
+      try {
+        const word = await getVocab();
+        if (!cancelled) setGameResponse(word);
+      } catch {
+        if (!cancelled) setError("Unable to load a word. Please try again.");
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
     }
-    setSubmissionResult("incorrect");
-    return false;
+
+    void loadWord();
+    return () => {
+      cancelled = true;
+    };
+  }, [round]);
+
+  async function handleSubmit(inputWord: string) {
+    if (
+      !gameResponse ||
+      submitting.current ||
+      submissionResult === "correct" ||
+      inputWord.length !== gameResponse.length_of_word
+    )
+      return;
+
+    submitting.current = true;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const result = await submitVocabAnswer(gameResponse.id, inputWord);
+      setSubmissionResult(result.is_correct ? "correct" : "incorrect");
+      setGameResponse({
+        ...gameResponse,
+        status: result.is_correct ? "success" : "failed",
+      });
+    } catch {
+      setError("Unable to check your answer. Press Enter to try again.");
+    } finally {
+      submitting.current = false;
+      setIsSubmitting(false);
+    }
   }
 
-  function handleCloseModal() {
+  function handleNextWord() {
     setSubmissionResult(null);
+    setGameResponse(null);
+    setError(null);
+    setIsLoading(true);
+    // Increment the round to trigger a new word fetch
+    setRound((value) => value + 1);
   }
-  function handleNextWord(){
-    //TODO: get next word from API
+
+  function goToWelcomePage() {
+    window.location.href = "/welcome";
   }
 
   return (
-    <MainPage>
-      <div>
-        <WordInput word={word} degree={degree} onSubmit={handleSubmit} />
-        <SuccessModal
-          isOpen={submissionResult === "correct"}
-          onSubmit={handleNextWord}
-          onClose={handleCloseModal}
-          title={title}
-        />
-        <IncorrectModal
-          isOpen={submissionResult === "incorrect"}
-          onClose={handleCloseModal}
-        />
-      </div>
-    </MainPage>
+    <>
+      {isLoading ? (
+        <MainPage>
+          <p role="status" className="p-8 text-center">
+            Loading word...
+          </p>
+        </MainPage>
+      ) : gameResponse ? (
+        <fieldset disabled={isSubmitting} className="m-0 min-w-0 border-0 p-0">
+          <WordInput
+            key={`${round}-${gameResponse.id}`}
+            word={gameResponse}
+            degree={1}
+            onSubmit={handleSubmit}
+          />
+        </fieldset>
+      ) : (
+        <MainPage>
+          <div className="p-8 text-center">
+            {!error && <p>No vocabulary available.</p>}
+            <button
+              type="button"
+              onClick={goToWelcomePage}
+              className="mt-4 underline"
+            >
+              Try again
+            </button>
+          </div>
+        </MainPage>
+      )}
+      {error && (
+        <p role="alert" className="p-4 text-center text-red-600">
+          {error}
+        </p>
+      )}
+      {isSubmitting && (
+        <p role="status" className="p-4 text-center">
+          Checking answer...
+        </p>
+      )}
+      <SuccessModal
+        isOpen={submissionResult === "correct"}
+        onSubmit={handleNextWord}
+        onClose={() => setSubmissionResult(null)}
+        title="Great job!"
+      />
+      <IncorrectModal
+        isOpen={submissionResult === "incorrect"}
+        onClose={() => setSubmissionResult(null)}
+      />
+    </>
   );
 }

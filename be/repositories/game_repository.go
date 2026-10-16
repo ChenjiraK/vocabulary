@@ -147,11 +147,15 @@ func (r *gameRepository) VocabGame(ctx context.Context, userID uint) (*models.Ga
 		Where("ga.is_correct = ?", true)
 
 	//NOTE: CHAR_LENGTH นับจำนวนตัวอักษรของ field eng
+	//LEFT(v.eng, 1) จะดึงตัวอักษรตัวแรกของ field eng
+	//RIGHT(v.eng, 1) จะดึงตัวอักษรตัวสุดท้ายของ field eng
 	err := r.db.WithContext(ctx).
 		Table("vocabulary AS v").
 		Select(`
 			v.id,
 			CHAR_LENGTH(v.eng) AS length_of_word,
+			LEFT(v.eng, 1) AS start_letter,
+			RIGHT(v.eng, 1) AS end_letter,
 			v.parts_of_speech,
 			v.thai,
 			v.meaning,

@@ -18,22 +18,39 @@ export type AuthLoginResponse = {
 };
 
 export async function loginWithGoogle() {
-  const { data } = await api.get<GoogleLoginResponse>("/auth/google/login");
-  return data;
+  try {
+    const { data } = await api.get<GoogleLoginResponse>("/auth/google/login");
+    return data;
+  } catch (error) {
+    console.error("Error logging in with Google:", error);
+    throw error;
+  }
 }
 
 export async function loginWithFacebook() {
-  const { data } = await api.get<GoogleLoginResponse>("/auth/facebook/login");
-  return data;
+  try {
+    const { data } = await api.get<GoogleLoginResponse>("/auth/facebook/login");
+    return data;
+  } catch (error) {
+    console.error("Error logging in with Facebook:", error);
+    throw error;
+  }
 }
 
 export async function loginWithPassword(payload: {
   email: string;
   password: string;
 }) {
-  const { data } = await api.post<AuthLoginResponse>("/auth/login", {
-    email: payload.email,
-    password: payload.password,
+  return new Promise<AuthLoginResponse>(async (resolve, reject) => {
+    try {
+      const { data } = await api.post<AuthLoginResponse>("/auth/login", {
+        email: payload.email,
+        password: payload.password,
+      });
+      resolve(data);
+    } catch (error) {
+      console.error("Error logging in with password:", error);
+      reject(error);
+    }
   });
-  return data;
 }
