@@ -3,11 +3,10 @@
 import { type FormEvent, useState } from "react";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton, InputAdornment, TextField } from "@mui/material";
+import { IconButton, InputAdornment, TextField } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { loginWithPassword } from "@/app/services/auth.service";
 import { useAuthStore } from "@/app/stores/auth.store";
-import MainButton from "@/app/components/ui/MainButton";
 
 interface FormEmailPasswordProps {
   onBack?: () => void;
@@ -93,9 +92,10 @@ export default function FormEmailPassword({ onBack }: FormEmailPasswordProps) {
         <div className="flex gap-5 mt-5">
           <button
             type="submit"
+            disabled={isLoading}
             className="flex h-10 w-full items-center justify-center gap-2 rounded-[40px] border border-[#b9c0c9] bg-primary-blue text-sm font-bold text-white shadow-sm"
           >
-            {isLoading ? "Logging in..." : "Login"}
+            Login
           </button>
           <button
             type="button"
@@ -104,22 +104,6 @@ export default function FormEmailPassword({ onBack }: FormEmailPasswordProps) {
           >
             Back
           </button>
-          {/* <Button
-            type="button"
-            variant="outlined"
-            disabled={isLoading}
-            onClick={onBack}
-            sx={{
-              width: "100%",
-              borderRadius: "40px",
-              textTransform: "none",
-              fontWeight: 600,
-              py: 1.25,
-              my: 1.5,
-            }}
-          >
-            Back
-          </Button> */}
         </div>
       </form>
     </div>

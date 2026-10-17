@@ -7,6 +7,8 @@ import type { AuthLoginResponse, AuthUser } from "@/app/services/auth.service";
 type AuthState = {
   message: string | null;
   token: string | null;
+  correct_answer: number | null;
+  score: number | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
   setLoginData: (data: AuthLoginResponse) => void;
@@ -18,12 +20,16 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       message: null,
       token: null,
+      correct_answer: null,
+      score: null,
       user: null,
       isAuthenticated: false,
       setLoginData: (data) =>
         set({
           message: data.message,
           token: data.token,
+          correct_answer: data.correct_answers,
+          score: data.score,
           user: data.user,
           isAuthenticated: Boolean(data.token),
         }),
@@ -31,6 +37,8 @@ export const useAuthStore = create<AuthState>()(
         set({
           message: null,
           token: null,
+          correct_answer: null,
+          score: null,
           user: null,
           isAuthenticated: false,
         }),

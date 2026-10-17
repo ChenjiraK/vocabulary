@@ -1,13 +1,14 @@
 "use client";
 
-import MainPage from "../components/ui/MainPage";
-import Image from "next/image";
-import LoginModal from "../components/modal/LoginModal";
-import bookIcon from "@/public/images/book-icon.png";
 import { useState } from "react";
+import { useAuthStore } from "@/app/stores/auth.store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock as clockIcon } from "@fortawesome/free-regular-svg-icons/faClock";
 import { faStar as starIcon } from "@fortawesome/free-solid-svg-icons/faStar";
+import MainPage from "@/app/components/ui/MainPage";
+import Image from "next/image";
+import LoginModal from "@/app/components/modal/LoginModal";
+import bookIcon from "@/public/images/book-icon.png";
 
 const ruleItems = [
   {
@@ -24,6 +25,16 @@ const ruleItems = [
 
 export default function GamePage() {
   const [isOpenLoginModal, setIsOpenLoginModal] = useState(false);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  function handleStartClick() {
+    if (isAuthenticated) {
+      // Redirect to the game page if the user is authenticated
+      window.location.href = "/game";
+    } else {
+      setIsOpenLoginModal(true);
+    }
+  }
 
   return (
     <MainPage>
@@ -62,7 +73,7 @@ export default function GamePage() {
 
           <button
             className="mt-9 h-14 w-full max-w-75 rounded-2xl bg-[#102b61] text-xl font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_10px_rgba(16,43,97,0.2)] transition hover:bg-[#0b2453]"
-            onClick={() => setIsOpenLoginModal(true)}
+            onClick={handleStartClick}
           >
             Start
           </button>

@@ -134,7 +134,16 @@ func (s *authService) Login(ctx context.Context, request models.LoginRequest) (*
 		return nil, ErrInvalidCredentials
 	}
 
-	return s.authResponse("logged in successfully", identity.User)
+	stats, err := s.userRepository.GetUserGameStats(ctx, identity.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("get user game stats: %w", err)
+	}
+	response, err := s.authResponse("logged in successfully", identity.User)
+	if err != nil {
+		return nil, err
+	}
+	response.UserGameStats = stats
+	return response, nil
 }
 
 func (s *authService) GoogleLoginURL() (string, error) {

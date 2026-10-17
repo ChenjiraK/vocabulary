@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faForward } from "@fortawesome/free-solid-svg-icons";
+import { useAuthStore } from "@/app/stores/auth.store";
 import MainPage from "../components/ui/MainPage";
 import IncorrectModal from "../components/modal/IncorrectModal";
 import SuccessModal from "../components/modal/SuccessModal";
@@ -21,6 +24,7 @@ export default function GamePage() {
   const [error, setError] = useState<string | null>(null);
   const [round, setRound] = useState(0);
   const submitting = useRef(false);
+  const level = useAuthStore.getState().correct_answer ?? 1;
 
   useEffect(() => {
     let cancelled = false;
@@ -95,9 +99,10 @@ export default function GamePage() {
           <WordInput
             key={`${round}-${gameResponse.id}`}
             word={gameResponse}
-            degree={1}
+            degree={level}
             onSubmit={handleSubmit}
-          />
+            onNextWord={handleNextWord}
+          ></WordInput>
         </fieldset>
       ) : (
         <MainPage>

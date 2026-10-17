@@ -3,7 +3,8 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faForward } from "@fortawesome/free-solid-svg-icons";
-import MainPage from "../components/ui/MainPage";
+import Image from "next/image";
+import MainPage from "@/app/components/ui/MainPage";
 //import CircleCountdown from "../components/CircleCountdown";
 import type { GameVocabResponse } from "@/app/type/GameType";
 
@@ -11,11 +12,19 @@ type WordInputProps = {
   word: GameVocabResponse;
   degree: number;
   onSubmit: (inputWord: string) => void;
+  onNextWord?: () => void;
 };
 
-export default function WordInput({ word, degree, onSubmit }: WordInputProps) {
+export default function WordInput({
+  word,
+  degree,
+  onSubmit,
+  onNextWord,
+}: WordInputProps) {
   const [inputWord, setInputWord] = useState("");
   const [isShowHint, setIsShowHint] = useState(false);
+  const isShowNextButton =
+    word.status === "success" && onNextWord !== undefined;
   const lengthOfWord = word.length_of_word ?? 0;
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -104,20 +113,25 @@ export default function WordInput({ word, degree, onSubmit }: WordInputProps) {
               onChange={handleInputChange}
             />
           </form>
-          {word.status === "success" && (
-            <button
-              type="button"
-              className="mt-20 flex h-10 w-36.25 items-center justify-center gap-2 rounded-md border bg-primary-blue text-white font-bold shadow-sm"
-              onClick={() => {}}
-            >
-              <FontAwesomeIcon
-                icon={faForward}
-                className="h-4 w-4 text-white"
-              />
-              NEXT WORD
-            </button>
+          {isShowNextButton && (
+            <div className="mt-20">
+              <button
+                type="button"
+                className="flex h-12 w-38 items-center justify-center gap-2 rounded-4xl border border-[#b9c0c9] bg-white text-sm font-bold text-slate-950 shadow-sm"
+                onClick={onNextWord}
+              >
+                <Image
+                  src="/images/next-icon.gif"
+                  alt="Correct answer"
+                  width={24}
+                  height={24}
+                  unoptimized
+                />
+                NEXT WORD
+              </button>
+            </div>
           )}
-          {!isShowHint && (
+          {!isShowHint && !isShowNextButton && (
             <button
               type="button"
               className="mt-20 flex h-10 w-36.25 items-center justify-center gap-2 rounded-md border border-[#b9c0c9] bg-white text-sm font-bold text-slate-950 shadow-sm"

@@ -157,6 +157,7 @@ func TestPasswordLoginValidatesBcryptHash(t *testing.T) {
 	hash := string(hashBytes)
 
 	repository := &fakeUserRepository{
+		gameStats: models.UserGameStats{CorrectAnswers: 12, Score: 36},
 		identities: []models.UserAuthIdentity{
 			{
 				UserID:       1,
@@ -180,6 +181,9 @@ func TestPasswordLoginValidatesBcryptHash(t *testing.T) {
 	if err != nil {
 		t.Fatalf("login: %v", err)
 	}
+	if response.CorrectAnswers != 12 || response.Score != 36 {
+		t.Fatalf("expected login stats 12/36, got %d/%d", response.CorrectAnswers, response.Score)
+	}
 	if response.Token == "" {
 		t.Fatal("expected token")
 	}
@@ -202,6 +206,7 @@ type fakeUserRepository struct {
 		user     models.User
 		identity models.UserAuthIdentity
 	}
+	gameStats    models.UserGameStats
 	updatedUsers []models.User
 	nextUserID   uint
 }
@@ -298,4 +303,8 @@ func (r *fakeUserRepository) nextID() uint {
 	id := r.nextUserID
 	r.nextUserID++
 	return id
+}
+
+func (r *fakeUserRepository) GetUserGameStats(ctx context.Context, userID uint) (models.UserGameStats, error) {
+	return r.gameStats, nil
 }

@@ -12,6 +12,8 @@ export type AuthUser = {
 };
 
 export type AuthLoginResponse = {
+  correct_answers: number;
+  score: number;
   message: string;
   token: string;
   user: AuthUser;

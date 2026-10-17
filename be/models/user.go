@@ -63,7 +63,13 @@ type UserResponse struct {
 	UserType    string  `json:"user_type"`
 }
 
+type UserGameStats struct {
+	CorrectAnswers int64 `json:"correct_answers"`
+	Score          int64 `json:"score"`
+}
+
 type AuthResponse struct {
+	UserGameStats
 	Message string       `json:"message"`
 	Token   string       `json:"token"`
 	User    UserResponse `json:"user"`

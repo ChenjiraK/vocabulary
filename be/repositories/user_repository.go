@@ -9,6 +9,7 @@ import (
 )
 
 type UserRepository interface {
+	GetUserGameStats(ctx context.Context, userID uint) (models.UserGameStats, error)
 	CreateUser(ctx context.Context, user *models.User) error
 	CreateUserWithIdentity(ctx context.Context, user *models.User, identity *models.UserAuthIdentity) error
 	CreateIdentity(ctx context.Context, identity *models.UserAuthIdentity) error
@@ -110,4 +111,13 @@ func (r *userRepository) FindIdentityByEmail(ctx context.Context, email string) 
 
 func (r *userRepository) UpdateUser(ctx context.Context, user *models.User) error {
 	return r.db.WithContext(ctx).Save(user).Error
+}
+
+func (r *userRepository) GetUserGameStats(ctx context.Context, userID uint) (models.UserGameStats, error) {
+	var stats models.UserGameStats
+	err := r.db.WithContext(ctx).Model(&models.GameSession{}).
+		Select("COALESCE(SUM(correct_answers), 0) AS correct_answers, COALESCE(SUM(score), 0) AS score").
+		Where("user_id = ?", userID).
+		Scan(&stats).Error
+	return stats, err
 }
