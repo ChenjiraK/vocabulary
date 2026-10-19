@@ -18,3 +18,12 @@ type Vocabulary struct {
 func (Vocabulary) TableName() string {
 	return "vocabulary"
 }
+
+// VocabularyLevelProgress counts each vocabulary once, even across multiple answers.
+type VocabularyLevelProgress struct {
+	Level     string
+	Total     int64
+	Completed int64
+}
+
+type VocabularyLevelsResponse map[string]string

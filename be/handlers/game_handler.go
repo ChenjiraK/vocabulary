@@ -109,7 +109,7 @@ func (h *GameHandler) GetVocabularyForGame(c *gin.Context) {
 		return
 	}
 
-	vocabulary, err := h.gameService.VocabularyForGame(c.Request.Context(), userID)
+	vocabulary, err := h.gameService.VocabularyForGame(c.Request.Context(), userID, c.Query("level"))
 	if err != nil {
 		writeGameError(c, err)
 		return
@@ -182,6 +182,8 @@ func writeGameError(c *gin.Context, err error) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "vocabulary not found"})
 	case errors.Is(err, services.ErrGameSessionClosed):
 		c.JSON(http.StatusConflict, gin.H{"message": "game session is not in progress"})
+	case errors.Is(err, services.ErrInvalidVocabularyLevel):
+		c.JSON(http.StatusBadRequest, gin.H{"message": "level must be one of A1, A2, B1, B2, C1, C2"})
 	case errors.Is(err, services.ErrInvalidAnswerWord):
 		c.JSON(http.StatusBadRequest, gin.H{"message": "word must contain english letters only"})
 	default:

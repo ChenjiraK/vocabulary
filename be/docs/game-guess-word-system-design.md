@@ -48,11 +48,14 @@ Client สามารถ login ได้ 4 รูปแบบ
 ### Endpoint
 
 ```http
-GET /vocabulary/guess-word
+GET /vocabulary/guess-word?level=A1
 Authorization: Bearer <token>
 ```
 
 ### Business Rules
+
+- Query parameter `level` เป็น optional รับค่า `A1`, `A2`, `B1`, `B2`, `C1`, `C2` เพื่อกรองคำศัพท์เฉพาะระดับนั้น (รองรับตัวพิมพ์เล็กและตัดช่องว่างหัวท้าย)
+- ไม่ส่ง `level` หรือส่งค่าว่าง จะเลือกคำศัพท์ทุกระดับตามลำดับเดิม; ค่าอื่นตอบ HTTP 400
 
 - ต้องเป็น authenticated user เท่านั้น
 - ดึง user id จาก token

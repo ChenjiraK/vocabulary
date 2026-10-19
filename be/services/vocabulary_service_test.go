@@ -3,12 +3,68 @@ package services
 import (
 	"bytes"
 	"context"
+	"errors"
+	"reflect"
 	"testing"
 
 	"vocabulary/models"
 
 	"github.com/xuri/excelize/v2"
 )
+
+func TestLevels(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		progress []models.VocabularyLevelProgress
+		want     models.VocabularyLevelsResponse
+	}{
+		{
+			name: "no vocabulary",
+			want: models.VocabularyLevelsResponse{"A1": "inactive", "A2": "inactive", "B1": "inactive", "B2": "inactive", "C1": "inactive", "C2": "inactive"},
+		},
+		{
+			name: "requested example",
+			progress: []models.VocabularyLevelProgress{
+				{Level: "B1", Total: 2, Completed: 2},
+				{Level: "B2", Total: 3, Completed: 1},
+			},
+			want: models.VocabularyLevelsResponse{"A1": "inactive", "A2": "inactive", "B1": "complete", "B2": "active", "C1": "inactive", "C2": "inactive"},
+		},
+		{
+			name: "unplayed vocabulary and all supported levels",
+			progress: []models.VocabularyLevelProgress{
+				{Level: "A1", Total: 1},
+				{Level: "A2", Total: 1, Completed: 1},
+				{Level: "B1", Total: 1, Completed: 1},
+				{Level: "B2", Total: 1, Completed: 1},
+				{Level: "C1", Total: 1, Completed: 1},
+				{Level: "C2", Total: 1, Completed: 1},
+				{Level: "unknown", Total: 1},
+			},
+			want: models.VocabularyLevelsResponse{"A1": "active", "A2": "complete", "B1": "complete", "B2": "complete", "C1": "complete", "C2": "complete"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repository := &fakeVocabularyRepository{progress: tc.progress}
+			got, err := NewVocabularyService(repository).Levels(context.Background(), 42)
+			if err != nil || !reflect.DeepEqual(got, tc.want) {
+				t.Fatalf("got %v, %v; want %v", got, err, tc.want)
+			}
+			if repository.progressUserID != 42 {
+				t.Fatalf("expected progress for user 42, got %d", repository.progressUserID)
+			}
+		})
+	}
+}
+
+func TestLevelsRepositoryError(t *testing.T) {
+	wantErr := errors.New("database unavailable")
+	repository := &fakeVocabularyRepository{progressErr: wantErr}
+	response, err := NewVocabularyService(repository).Levels(context.Background(), 42)
+	if response != nil || !errors.Is(err, wantErr) {
+		t.Fatalf("expected database error and no response, got %v, %v", response, err)
+	}
+}
 
 func TestUploadExcelSkipsRowsWithEmptyCells(t *testing.T) {
 	var file bytes.Buffer
@@ -67,8 +123,16 @@ func TestUploadExcelSkipsRowsWithEmptyCells(t *testing.T) {
 }
 
 type fakeVocabularyRepository struct {
-	created []models.Vocabulary
-	updated []models.Vocabulary
+	progress       []models.VocabularyLevelProgress
+	progressErr    error
+	progressUserID uint
+	created        []models.Vocabulary
+	updated        []models.Vocabulary
+}
+
+func (r *fakeVocabularyRepository) ListLevelProgress(ctx context.Context, userID uint) ([]models.VocabularyLevelProgress, error) {
+	r.progressUserID = userID
+	return r.progress, r.progressErr
 }
 
 func (r *fakeVocabularyRepository) Create(ctx context.Context, vocabulary *models.Vocabulary) error {

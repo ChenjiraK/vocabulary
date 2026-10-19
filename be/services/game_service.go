@@ -28,7 +28,7 @@ type GameService interface {
 	FinishSession(ctx context.Context, sessionID uint) (*models.GameSession, error)
 	Leaderboard(ctx context.Context, limit int) ([]models.LeaderboardEntry, error)
 	UserSessions(ctx context.Context, userID uint) ([]models.GameSession, error)
-	VocabularyForGame(ctx context.Context, userID uint) (*models.GameVocabularyResponse, error)
+	VocabularyForGame(ctx context.Context, userID uint, level string) (*models.GameVocabularyResponse, error)
 	SubmitGuessWordAnswer(ctx context.Context, userID uint, request models.SubmitGameAnswerRequest) (*models.GuessWordAnswerResponse, error)
 }
 
@@ -76,7 +76,14 @@ func (s *gameService) StartSession(ctx context.Context, userID uint) (*models.Ga
 	return session, nil
 }
 
-func (s *gameService) VocabularyForGame(ctx context.Context, userID uint) (*models.GameVocabularyResponse, error) {
+func (s *gameService) VocabularyForGame(ctx context.Context, userID uint, level string) (*models.GameVocabularyResponse, error) {
+	if level != "" {
+		if _, err := scoreByVocabularyLevel(level); err != nil {
+			return nil, err
+		}
+		level = strings.ToUpper(strings.TrimSpace(level))
+	}
+
 	user, err := s.userRepository.FindUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("find user: %w", err)
@@ -85,7 +92,7 @@ func (s *gameService) VocabularyForGame(ctx context.Context, userID uint) (*mode
 		return nil, ErrUserNotFound
 	}
 
-	return s.gameRepository.VocabGame(ctx, userID)
+	return s.gameRepository.VocabGame(ctx, userID, level)
 }
 
 func (s *gameService) SubmitAnswer(ctx context.Context, sessionID uint, request models.SubmitGameAnswerRequest) (*models.GameAnswerResponse, error) {

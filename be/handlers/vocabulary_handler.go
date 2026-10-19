@@ -21,6 +21,20 @@ func NewVocabularyHandler(vocabularyService services.VocabularyService) *Vocabul
 	return &VocabularyHandler{vocabularyService: vocabularyService}
 }
 
+func (h *VocabularyHandler) GetLevels(c *gin.Context) {
+	userID, ok := authenticatedUserID(c)
+	if !ok {
+		return
+	}
+
+	response, err := h.vocabularyService.Levels(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "cannot load vocabulary levels"})
+		return
+	}
+	c.JSON(http.StatusOK, response)
+}
+
 func (h *VocabularyHandler) UploadExcel(c *gin.Context) {
 	var request models.UploadVocabularyExcelRequest
 	if err := c.ShouldBind(&request); err != nil {

@@ -4,7 +4,9 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"strings"
 
+	"vocabulary/middlewares"
 	"vocabulary/models"
 	"vocabulary/services"
 
@@ -77,6 +79,27 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
+	userID := c.GetUint(middlewares.UserIDContextKey)
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "invalid or expired token"})
+		return
+	}
+
+	response, err := h.authService.GetCurrentUser(c.Request.Context(), userID)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "user not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "cannot get current user"})
+		return
+	}
+
+	response.Token = strings.TrimSpace(strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer "))
 	c.JSON(http.StatusOK, response)
 }
 

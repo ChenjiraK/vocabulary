@@ -16,6 +16,7 @@ import (
 var ErrInvalidVocabularyExcelHeader = errors.New("invalid vocabulary excel header")
 
 type VocabularyService interface {
+	Levels(ctx context.Context, userID uint) (models.VocabularyLevelsResponse, error)
 	UploadExcel(ctx context.Context, reader io.Reader) (*models.UploadVocabularyExcelResponse, error)
 }
 
@@ -25,6 +26,28 @@ type vocabularyService struct {
 
 func NewVocabularyService(vocabularyRepository repositories.VocabularyRepository) VocabularyService {
 	return &vocabularyService{vocabularyRepository: vocabularyRepository}
+}
+
+func (s *vocabularyService) Levels(ctx context.Context, userID uint) (models.VocabularyLevelsResponse, error) {
+	progress, err := s.vocabularyRepository.ListLevelProgress(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list vocabulary level progress: %w", err)
+	}
+
+	response := models.VocabularyLevelsResponse{
+		"A1": "inactive", "A2": "inactive", "B1": "inactive",
+		"B2": "inactive", "C1": "inactive", "C2": "inactive",
+	}
+	for _, level := range progress {
+		if _, supported := response[level.Level]; !supported || level.Total == 0 {
+			continue
+		}
+		response[level.Level] = "active"
+		if level.Completed == level.Total {
+			response[level.Level] = "complete"
+		}
+	}
+	return response, nil
 }
 
 func (s *vocabularyService) UploadExcel(ctx context.Context, reader io.Reader) (*models.UploadVocabularyExcelResponse, error) {

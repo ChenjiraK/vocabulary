@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useAuthStore } from "@/app/stores/auth.store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock as clockIcon } from "@fortawesome/free-regular-svg-icons/faClock";
 import { faStar as starIcon } from "@fortawesome/free-solid-svg-icons/faStar";
+import { getCurrentUser } from "@/app/services/auth.service";
 import MainPage from "@/app/components/ui/MainPage";
 import Image from "next/image";
 import LoginModal from "@/app/components/modal/LoginModal";
@@ -25,14 +25,25 @@ const ruleItems = [
 
 export default function GamePage() {
   const [isOpenLoginModal, setIsOpenLoginModal] = useState(false);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  function handleStartClick() {
+  async function handleStartClick() {
+    const isAuthenticated = await checkCurrentUser();
     if (isAuthenticated) {
       // Redirect to the game page if the user is authenticated
       window.location.href = "/game";
     } else {
       setIsOpenLoginModal(true);
+    }
+  }
+
+  //return true,false type Promise
+  async function checkCurrentUser(): Promise<boolean> {
+    try {
+      const data = await getCurrentUser();
+      return Boolean(data);
+    } catch (err) {
+      console.error(err);
+      return false;
     }
   }
 
@@ -76,10 +87,6 @@ export default function GamePage() {
             onClick={handleStartClick}
           >
             Start
-          </button>
-
-          <button className="mt-8 text-base font-bold text-[#102b61]">
-            How to play
           </button>
         </div>
         <LoginModal

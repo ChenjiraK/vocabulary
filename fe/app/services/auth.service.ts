@@ -56,3 +56,8 @@ export async function loginWithPassword(payload: {
     }
   });
 }
+
+export async function getCurrentUser() {
+  const { data } = await api.get<AuthLoginResponse>("/auth/me");
+  return data;
+}

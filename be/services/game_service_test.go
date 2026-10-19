@@ -264,7 +264,7 @@ func (r *fakeGameRepository) FindVocabularyByID(ctx context.Context, id uint) (*
 	return nil, nil
 }
 
-func (r *fakeGameRepository) VocabGame(ctx context.Context, userID uint) (*models.GameVocabularyResponse, error) {
+func (r *fakeGameRepository) VocabGame(ctx context.Context, userID uint, level string) (*models.GameVocabularyResponse, error) {
 	return nil, nil
 }
 
@@ -296,4 +296,52 @@ func (r *fakeGameRepository) nextID() uint {
 	id := r.nextSessionID
 	r.nextSessionID++
 	return id
+}
+
+type levelCapturingGameRepository struct {
+	fakeGameRepository
+	level  string
+	called bool
+}
+
+func (r *levelCapturingGameRepository) VocabGame(ctx context.Context, userID uint, level string) (*models.GameVocabularyResponse, error) {
+	r.called = true
+	r.level = level
+	return &models.GameVocabularyResponse{ID: 10}, nil
+}
+
+func TestVocabularyForGameLevel(t *testing.T) {
+	for _, tc := range []struct {
+		input   string
+		want    string
+		invalid bool
+	}{
+		{input: "", want: ""},
+		{input: "A1", want: "A1"},
+		{input: "A2", want: "A2"},
+		{input: "B1", want: "B1"},
+		{input: "B2", want: "B2"},
+		{input: "C1", want: "C1"},
+		{input: "C2", want: "C2"},
+		{input: " b1 ", want: "B1"},
+		{input: "A3", invalid: true},
+		{input: "A1,B1", invalid: true},
+		{input: " ", invalid: true},
+	} {
+		t.Run(tc.input, func(t *testing.T) {
+			repository := &levelCapturingGameRepository{}
+			users := &fakeUserRepository{users: []models.User{{ID: 1}}}
+			service := NewGameService(repository, users)
+			result, err := service.VocabularyForGame(context.Background(), 1, tc.input)
+			if tc.invalid {
+				if err != ErrInvalidVocabularyLevel || repository.called {
+					t.Fatalf("expected invalid level before repository call, got err=%v called=%v", err, repository.called)
+				}
+				return
+			}
+			if err != nil || result == nil || result.ID != 10 || !repository.called || repository.level != tc.want {
+				t.Fatalf("unexpected result: result=%v err=%v called=%v level=%q", result, err, repository.called, repository.level)
+			}
+		})
+	}
 }

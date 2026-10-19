@@ -35,6 +35,7 @@ type AuthService interface {
 	CreateGuestUser(ctx context.Context, displayName string) (*models.User, error)
 	Register(ctx context.Context, request models.RegisterRequest) (*models.AuthResponse, error)
 	Login(ctx context.Context, request models.LoginRequest) (*models.AuthResponse, error)
+	GetCurrentUser(ctx context.Context, userID uint) (*models.AuthResponse, error)
 	GoogleLoginURL() (string, error)
 	FacebookLoginURL() (string, error)
 	LoginWithGoogleCode(ctx context.Context, code string) (*models.AuthResponse, error)
@@ -144,6 +145,26 @@ func (s *authService) Login(ctx context.Context, request models.LoginRequest) (*
 	}
 	response.UserGameStats = stats
 	return response, nil
+}
+
+func (s *authService) GetCurrentUser(ctx context.Context, userID uint) (*models.AuthResponse, error) {
+	user, err := s.userRepository.FindUserByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("find current user: %w", err)
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+
+	stats, err := s.userRepository.GetUserGameStats(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user game stats: %w", err)
+	}
+	return &models.AuthResponse{
+		Message:       "current user retrieved successfully",
+		User:          models.NewUserResponse(*user),
+		UserGameStats: stats,
+	}, nil
 }
 
 func (s *authService) GoogleLoginURL() (string, error) {

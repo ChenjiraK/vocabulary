@@ -43,6 +43,7 @@ func RegisterAPIRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/auth/google/callback", authHandler.GoogleCallback)
 	router.GET("/auth/facebook/login", authHandler.FacebookLogin)
 	router.GET("/auth/facebook/callback", authHandler.FacebookCallback)
+	router.GET("/auth/me", middlewares.AuthMiddleware(), authHandler.GetCurrentUser)
 
 	router.POST("/game-sessions", gameHandler.StartSession)             //รอบที่ 1-10
 	router.POST("/game-sessions/:id/answers", gameHandler.SubmitAnswer) //คำตอบของรอบที่ 1-10
@@ -50,6 +51,7 @@ func RegisterAPIRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/leaderboard", gameHandler.Leaderboard)
 
 	router.POST("/vocabularies/upload", vocabularyHandler.UploadExcel)
+	router.GET("/level", middlewares.AuthMiddleware(), vocabularyHandler.GetLevels)
 	router.GET("/vocabulary/guess-word", middlewares.AuthMiddleware(), gameHandler.GetVocabularyForGame)
 	router.POST("/vocabulary/guess-word/answer", middlewares.AuthMiddleware(), gameHandler.SubmitGuessWordAnswer)
 }

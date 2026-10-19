@@ -16,7 +16,7 @@ type GameRepository interface {
 	UpdateSession(ctx context.Context, session *models.GameSession) error
 	CreateAnswer(ctx context.Context, answer *models.GameAnswer) error
 	FindVocabularyByID(ctx context.Context, id uint) (*models.Vocabulary, error)
-	VocabGame(ctx context.Context, userID uint) (*models.GameVocabularyResponse, error)
+	VocabGame(ctx context.Context, userID uint, level string) (*models.GameVocabularyResponse, error)
 	ListLeaderboard(ctx context.Context, limit int) ([]models.LeaderboardEntry, error)
 	ListSessionsByUserID(ctx context.Context, userID uint) ([]models.GameSession, error)
 	UpdateAnswer(ctx context.Context, answer *models.GameAnswer) error
@@ -136,7 +136,7 @@ func (r *gameRepository) FindVocabularyByID(ctx context.Context, id uint) (*mode
 	return &vocabulary, nil
 }
 
-func (r *gameRepository) VocabGame(ctx context.Context, userID uint) (*models.GameVocabularyResponse, error) {
+func (r *gameRepository) VocabGame(ctx context.Context, userID uint, level string) (*models.GameVocabularyResponse, error) {
 	var vocabulary models.GameVocabularyResponse
 
 	playedCorrectSubQuery := r.db.
@@ -149,7 +149,7 @@ func (r *gameRepository) VocabGame(ctx context.Context, userID uint) (*models.Ga
 	//NOTE: CHAR_LENGTH นับจำนวนตัวอักษรของ field eng
 	//LEFT(v.eng, 1) จะดึงตัวอักษรตัวแรกของ field eng
 	//RIGHT(v.eng, 1) จะดึงตัวอักษรตัวสุดท้ายของ field eng
-	err := r.db.WithContext(ctx).
+	query := r.db.WithContext(ctx).
 		Table("vocabulary AS v").
 		Select(`
 			v.id,
@@ -161,8 +161,12 @@ func (r *gameRepository) VocabGame(ctx context.Context, userID uint) (*models.Ga
 			v.meaning,
 			v.synonyms
 		`).
-		Where("NOT EXISTS (?)", playedCorrectSubQuery).
-		Order("v.level ASC, v.id ASC").
+		Where("NOT EXISTS (?)", playedCorrectSubQuery)
+	if level != "" {
+		query = query.Where("v.level = ?", level)
+	}
+
+	err := query.Order("v.level ASC, v.id ASC").
 		Limit(1).
 		Scan(&vocabulary).Error
 	if err != nil {

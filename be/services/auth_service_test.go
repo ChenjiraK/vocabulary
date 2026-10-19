@@ -9,6 +9,33 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func TestGetCurrentUserReturnsUserAndGameStats(t *testing.T) {
+	repository := &fakeUserRepository{
+		users: []models.User{
+			{ID: 1, DisplayName: "Other Player", UserType: models.UserTypeRegistered},
+			{ID: 7, DisplayName: "Current Player", UserType: models.UserTypeRegistered},
+		},
+		gameStats: models.UserGameStats{CorrectAnswers: 12, Score: 36},
+	}
+	response, err := NewAuthService(repository).GetCurrentUser(context.Background(), 7)
+	if err != nil {
+		t.Fatalf("get current user: %v", err)
+	}
+	if response.User.ID != 7 || response.User.DisplayName != "Current Player" {
+		t.Fatalf("unexpected current user: %+v", response.User)
+	}
+	if response.CorrectAnswers != 12 || response.Score != 36 {
+		t.Fatalf("unexpected game stats: %+v", response.UserGameStats)
+	}
+}
+
+func TestGetCurrentUserRejectsMissingUser(t *testing.T) {
+	response, err := NewAuthService(&fakeUserRepository{}).GetCurrentUser(context.Background(), 99)
+	if err != ErrUserNotFound || response != nil {
+		t.Fatalf("expected missing user error, got response %v, error %v", response, err)
+	}
+}
+
 func TestRegisterReturnsDuplicateEmailForExistingPasswordIdentity(t *testing.T) {
 	email := "player@example.com"
 	repository := &fakeUserRepository{
