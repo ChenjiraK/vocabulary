@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@mui/material";
-import GoogleButton from "./Login/GoogleButton";
-import FacebookButton from "./Login/FacebookButton";
+import GoogleButton from "../ui/form/GoogleButton";
+import FacebookButton from "../ui/form/FacebookButton";
 import PasswordButton from "./Login/PasswordButton";
-import FormEmailPassword from "./Login/FormEmailPassword";
+import FormEmailPassword from "../ui/form/FormEmailPassword";
 
 type ModalProps = {
   isOpen: boolean;

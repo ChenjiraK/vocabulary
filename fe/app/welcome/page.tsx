@@ -8,7 +8,6 @@ import { getCurrentUser } from "@/app/services/auth.service";
 import MainPage from "@/app/components/ui/MainPage";
 import Image from "next/image";
 import LoginModal from "@/app/components/modal/LoginModal";
-import bookIcon from "@/public/images/book-icon.png";
 
 const ruleItems = [
   {
@@ -59,7 +58,7 @@ export default function GamePage() {
 
           <div className="mt-8 w-full">
             <Image
-              src={bookIcon}
+              src="/images/book-icon.png"
               alt="Book icon"
               width={180}
               height={180}
