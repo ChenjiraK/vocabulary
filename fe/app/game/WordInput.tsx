@@ -56,6 +56,9 @@ export default function WordInput({
       onSubmit(inputWord);
     }
   }
+  function goBack() {
+    window.location.href = "/welcome";
+  }
 
   return (
     <MainPage>
@@ -65,6 +68,7 @@ export default function WordInput({
             type="button"
             aria-label="back"
             className="flex h-9 w-9 items-center justify-center text-[#111827]"
+            onClick={goBack}
           >
             <span className="block h-3 w-3 rotate-45 border-b-2 border-l-2 border-current" />
           </button>

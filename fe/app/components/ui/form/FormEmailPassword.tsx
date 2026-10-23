@@ -18,8 +18,8 @@ export default function FormEmailPassword({
   pending = false,
   setNotice,
 }: FormEmailPasswordProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("test@example.com");
+  const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -50,6 +50,8 @@ export default function FormEmailPassword({
       setIsLoading(false);
     }
   }
+  //NOTE: className="h-[clamp(20px,3vw,31px)]! w-[clamp(18px,2.7vw,28px)]!"
+  //ความสูงจะปรับตาม 3vw (3% ของความกว้าง viewport) แต่ต้องไม่ต่ำกว่า 20px และไม่เกิน 31px บังคับใช้ !important เพื่อเพิ่มความสำคัญของ CSS
   return (
     <div>
       <form
@@ -60,14 +62,14 @@ export default function FormEmailPassword({
         <div>
           <label
             htmlFor="email"
-            className="mb-[clamp(9px,1.25vw,13px)] block text-[20px] leading-[1.2] font-medium text-[#626775]"
+            className="mb-2.25 block leading-[1.2] font-medium text-[#626775]"
           >
             Email
           </label>
-          <div className="flex h-11 items-center rounded-[clamp(11px,1.5vw,15px)] border-2 border-[#dadddf] bg-white transition-[border-color,box-shadow] duration-180 focus-within:border-[#5678af] focus-within:shadow-[0_0_0_3px_#5678af18] motion-reduce:transition-none">
+          <div className="flex h-11 items-center rounded-xl border-2 border-[#dadddf] bg-white transition-[border-color,box-shadow] duration-180 focus-within:border-[#5678af] focus-within:shadow-[0_0_0_3px_#5678af18] motion-reduce:transition-none">
             <FontAwesomeIcon
               icon={faUser}
-              className="ml-[clamp(14px,2.5vw,26px)] h-[clamp(18px,3vw,20px)]! w-[clamp(18px,2.7vw,28px)]! shrink-0 text-[#7d818b]"
+              className="ml-3.5 h-5 w-5 shrink-0 text-[#7d818b]"
             />
             <input
               id="email"
@@ -78,26 +80,25 @@ export default function FormEmailPassword({
               autoComplete="username"
               autoCapitalize="none"
               spellCheck={false}
-              className="min-w-0 w-full self-stretch rounded-[inherit] border-0 bg-transparent px-[clamp(11px,2.3vw,24px)] py-3 text-[clamp(14px,2.45vw,20px)] text-[#132b50] outline-none placeholder:text-[#969ba5] placeholder:opacity-100"
+              className="min-w-0 w-full self-stretch rounded-[inherit] border-0 bg-transparent px-3 py-3 text-[#132b50] outline-none placeholder:text-[#969ba5] placeholder:opacity-100"
               placeholder="Enter your email"
               required
               disabled={isPending}
             />
           </div>
         </div>
-        <div className="mt-[clamp(19px,2.6vw,27px)]">
+        <div className="mt-5">
           <label
             htmlFor="password"
-            className="mb-[clamp(9px,1.25vw,13px)] block text-[20px] leading-[1.2] font-medium text-[#626775]"
+            className="mb-2.25 block leading-[1.2] font-medium text-[#626775]"
           >
             Password
           </label>
-          <div className="flex h-11 items-center rounded-[clamp(11px,1.5vw,15px)] border-2 border-[#dadddf] bg-white transition-[border-color,box-shadow] duration-180 focus-within:border-[#5678af] focus-within:shadow-[0_0_0_3px_#5678af18] motion-reduce:transition-none">
+          <div className="flex h-11 items-center rounded-xl border-2 border-[#dadddf] bg-white transition-[border-color,box-shadow] duration-180 focus-within:border-[#5678af] focus-within:shadow-[0_0_0_3px_#5678af18] motion-reduce:transition-none">
             <FontAwesomeIcon
               icon={faLock}
-              className="ml-[clamp(14px,2.5vw,26px)] h-5 w-5 shrink-0 text-[#7d818b]"
+              className="ml-3.5 h-5 w-5 shrink-0 text-[#7d818b]"
             />
-            {/* className="ml-[clamp(14px,2.5vw,26px)] h-[clamp(18px,3vw,20px)]! w-[clamp(18px,2.7vw,28px)]! shrink-0 text-[#7d818b]" */}
             <input
               id="password"
               name="password"
@@ -105,15 +106,14 @@ export default function FormEmailPassword({
               onChange={(event) => setPassword(event.target.value)}
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              className="min-w-0 w-full self-stretch rounded-[inherit] border-0 bg-transparent px-[clamp(11px,2.3vw,24px)] py-3 text-[clamp(14px,2.45vw,20px)] text-[#132b50] outline-none placeholder:text-[#969ba5] placeholder:opacity-100"
+              className="min-w-0 w-full self-stretch rounded-[inherit] border-0 bg-transparent px-3 py-3 text-[#132b50] outline-none placeholder:text-[#969ba5] placeholder:opacity-100"
               placeholder="Enter your password"
               required
               disabled={isPending}
             />
-            {/* className="min-w-0 w-full self-stretch rounded-[inherit] border-0 bg-transparent px-[clamp(11px,2.3vw,24px)] py-3 text-[clamp(14px,2.45vw,20px)] text-[#132b50] outline-none placeholder:text-[#969ba5] placeholder:opacity-100" */}
             <button
               type="button"
-              className="grid w-[clamp(44px,7.2vw,74px)] shrink-0 place-items-center self-stretch rounded-xl border-0 bg-transparent text-[clamp(20px,3.2vw,33px)] text-[#7d818b]"
+              className="grid w-11 shrink-0 place-items-center self-stretch rounded-xl border-0 bg-transparent text-[20px] text-[#7d818b]"
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
               aria-controls="password"
@@ -121,7 +121,7 @@ export default function FormEmailPassword({
               onClick={() => setShowPassword((visible) => !visible)}
             >
               <FontAwesomeIcon
-                className="h-[clamp(14px,3vw,18px)]! w-[clamp(14px,2.7vw,18px)]!"
+                className="h-3.5! w-3.5!"
                 icon={showPassword ? faEye : faEyeSlash}
               />
             </button>
@@ -129,7 +129,7 @@ export default function FormEmailPassword({
         </div>
         <button
           type="button"
-          className="mt-[clamp(13px,1.8vw,19px)] self-end border-0 bg-transparent p-0 text-[clamp(12px,2.2vw,18px)] leading-[1.3] text-[#0861db] hover:underline"
+          className="mt-3.5 self-end border-0 bg-transparent p-0 text-[12px] leading-[1.3] text-[#0861db] hover:underline"
           disabled={isPending}
           onClick={() =>
             setNotice
@@ -146,14 +146,15 @@ export default function FormEmailPassword({
         )}
         <button
           type="submit"
-          className="mt-[clamp(20px,2.3vw,24px)] h-[clamp(44px,3vw,56px)] w-full rounded-[clamp(12px,1.8vw,19px)] border border-[#142e5a] bg-[linear-gradient(110deg,#1a3766,#19335e)] text-[clamp(12px,1.8vw,18px)] font-bold text-white shadow-[0_3px_5px_#0c21490a] transition-[background,transform] duration-180 hover:bg-[#102a53] hover:bg-none active:translate-y-px"
+          className="mt-5 h-11 w-full rounded-xl border border-[#142e5a] bg-[linear-gradient(110deg,#1a3766,#19335e)] font-bold text-white shadow-[0_3px_5px_#0c21490a] transition-[background,transform] duration-180 hover:bg-[#102a53] hover:bg-none active:translate-y-px"
           disabled={isPending}
         >
           {isLoading ? "Logging in…" : "Log In"}
         </button>
       </form>
-      <div className="text-gray-200 text-center">
-        Don't have account? <span className="text-blue-primary">Sign Up</span>
+      <div className="text-gray-500 text-center mt-4">
+        Don't have account?{" "}
+        <span className="text-[#0861db] underline cursor-pointer">Sign Up</span>
       </div>
     </div>
   );

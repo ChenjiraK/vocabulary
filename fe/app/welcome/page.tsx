@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock as clockIcon } from "@fortawesome/free-regular-svg-icons/faClock";
 import { faStar as starIcon } from "@fortawesome/free-solid-svg-icons/faStar";
 import { getCurrentUser } from "@/app/services/auth.service";
 import MainPage from "@/app/components/ui/MainPage";
 import Image from "next/image";
-import LoginModal from "@/app/components/modal/LoginModal";
 
 const ruleItems = [
   {
@@ -23,7 +22,7 @@ const ruleItems = [
 ];
 
 export default function GamePage() {
-  const [isOpenLoginModal, setIsOpenLoginModal] = useState(false);
+  const router = useRouter();
 
   async function handleStartClick() {
     const isAuthenticated = await checkCurrentUser();
@@ -31,7 +30,8 @@ export default function GamePage() {
       // Redirect to the game page if the user is authenticated
       window.location.href = "/game";
     } else {
-      setIsOpenLoginModal(true);
+      //TODO: connect login page
+      router.push("/login");
     }
   }
 
@@ -88,10 +88,6 @@ export default function GamePage() {
             Start
           </button>
         </div>
-        <LoginModal
-          isOpen={isOpenLoginModal}
-          onClose={() => setIsOpenLoginModal(false)}
-        />
       </div>
     </MainPage>
   );

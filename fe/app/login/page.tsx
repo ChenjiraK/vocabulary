@@ -101,7 +101,7 @@ export default function LoginPage() {
               />
             </div>
           </section>
-          <section className="bg-white rounded-3xl shadow-xl p-10 max-w-xl">
+          <section className="bg-white rounded-3xl shadow-xl p-10 max-w-xl m-auto">
             <h2 id="login-title" className="font-bold text-4xl text-center">
               Welcome !
             </h2>
@@ -112,7 +112,7 @@ export default function LoginPage() {
             <div>
               <GoogleButton />
               <FacebookButton />
-              <div className="my-6 flex items-center gap-4">
+              <div className="my-2 flex items-center gap-4">
                 <div className="flex-1 border-t border-gray-300" />
                 <span className="text-sm text-gray-500">or</span>
                 <div className="flex-1 border-t border-gray-300" />

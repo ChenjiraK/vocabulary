@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faForward } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "@/app/stores/auth.store";
 import MainPage from "../components/ui/MainPage";
 import IncorrectModal from "../components/modal/IncorrectModal";
