@@ -61,3 +61,13 @@ export async function getCurrentUser() {
   const { data } = await api.get<AuthLoginResponse>("/auth/me");
   return data;
 }
+
+export async function register(payload: {
+  avatar_url?: string;
+  display_name: string;
+  email: string;
+  password: string;
+}) {
+  const { data } = await api.post<any>("/auth/register", { ...payload });
+  return data;
+}

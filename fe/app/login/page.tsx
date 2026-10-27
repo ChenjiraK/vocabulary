@@ -10,9 +10,9 @@ import {
 } from "@/app/services/auth.service";
 import { useAuthStore } from "@/app/stores/auth.store";
 import MainPage from "@/app/components/ui/MainPage";
-import FormEmailPassword from "@/app/components/ui/form/FormEmailPassword";
-import GoogleButton from "@/app/components/ui/form/GoogleButton";
-import FacebookButton from "@/app/components/ui/form/FacebookButton";
+import FormEmailPassword from "@/app/components/login/FormEmailPassword";
+import GoogleButton from "@/app/components/login/GoogleButton";
+import FacebookButton from "@/app/components/login/FacebookButton";
 
 export default function LoginPage() {
   const router = useRouter();

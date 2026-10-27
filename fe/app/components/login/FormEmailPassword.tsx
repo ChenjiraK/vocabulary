@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faLock } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-regular-svg-icons";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { loginWithPassword } from "@/app/services/auth.service";
 import { useAuthStore } from "@/app/stores/auth.store";
 
@@ -152,10 +153,15 @@ export default function FormEmailPassword({
           {isLoading ? "Logging in…" : "Log In"}
         </button>
       </form>
-      <div className="text-gray-500 text-center mt-4">
-        Don't have account?{" "}
-        <span className="text-[#0861db] underline cursor-pointer">Sign Up</span>
-      </div>
+      <p className="mt-6 text-center text-sm text-[#737784]">
+        Don't have account ?
+        <Link
+          href="/register"
+          className="ml-1 font-semibold text-[#0861db]! hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+        >
+          Sign Up
+        </Link>
+      </p>
     </div>
   );
 }
