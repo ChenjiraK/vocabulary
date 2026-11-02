@@ -4,17 +4,22 @@ import Image from "next/image";
 import { Button } from "@mui/material";
 import { loginWithGoogle } from "@/app/services/auth.service";
 
-export default function PasswordButton() {
+type PasswordButtonProps = {
+  disabled?: boolean;
+};
+export default function PasswordButton({ disabled }: PasswordButtonProps) {
   async function LoginWithPassword() {
     const data = await loginWithGoogle();
     console.log(data);
   }
 
   return (
-    <div>
+    <div className={disabled ? "cursor-not-allowed" : undefined}>
       <Button
         variant="outlined"
+        disabled={disabled}
         onClick={LoginWithPassword}
+        className={disabled ? "opacity-60" : undefined}
         sx={{
           width: "100%",
           borderRadius: "40px",

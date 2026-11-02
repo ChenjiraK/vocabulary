@@ -2,13 +2,18 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"vocabulary/models"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 
+var ErrDuplicateIdentity = errors.New("identity already exists")
+
 type UserRepository interface {
+	FindEmailByUserID(ctx context.Context, userID uint) (*string, error)
 	GetUserGameStats(ctx context.Context, userID uint) (models.UserGameStats, error)
 	CreateUser(ctx context.Context, user *models.User) error
 	CreateUserWithIdentity(ctx context.Context, user *models.User, identity *models.UserAuthIdentity) error
@@ -33,7 +38,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user *models.User) erro
 }
 
 func (r *userRepository) CreateUserWithIdentity(ctx context.Context, user *models.User, identity *models.UserAuthIdentity) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(user).Error; err != nil {
 			return err
 		}
@@ -41,6 +46,27 @@ func (r *userRepository) CreateUserWithIdentity(ctx context.Context, user *model
 		identity.UserID = user.ID
 		return tx.Create(identity).Error
 	})
+	var postgresError *pgconn.PgError
+	if errors.Is(err, gorm.ErrDuplicatedKey) || (errors.As(err, &postgresError) && postgresError.Code == "23505" && postgresError.ConstraintName == "user_auth_identities_email_provider_unique") {
+		return ErrDuplicateIdentity
+	}
+	return err
+}
+
+func (r *userRepository) FindEmailByUserID(ctx context.Context, userID uint) (*string, error) {
+	var identity models.UserAuthIdentity
+	err := r.db.WithContext(ctx).
+		Select("email").
+		Where("user_id = ? AND email IS NOT NULL", userID).
+		Order("CASE WHEN provider = 'password' THEN 0 ELSE 1 END, email_verified DESC, id ASC").
+		Take(&identity).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return identity.Email, nil
 }
 
 func (r *userRepository) CreateIdentity(ctx context.Context, identity *models.UserAuthIdentity) error {

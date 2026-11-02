@@ -17,7 +17,6 @@ import FacebookButton from "@/app/components/login/FacebookButton";
 export default function LoginPage() {
   const router = useRouter();
   const setLoginData = useAuthStore((state) => state.setLoginData);
-  const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState<
     "password" | "google" | "facebook" | null
   >(null);
@@ -110,8 +109,8 @@ export default function LoginPage() {
               <br /> and keep challenging yourself.
             </p>
             <div>
-              <GoogleButton />
-              <FacebookButton />
+              <GoogleButton disabled />
+              <FacebookButton disabled />
               <div className="my-2 flex items-center gap-4">
                 <div className="flex-1 border-t border-gray-300" />
                 <span className="text-sm text-gray-500">or</span>

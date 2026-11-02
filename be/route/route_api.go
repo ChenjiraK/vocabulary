@@ -7,12 +7,14 @@ import (
 	"vocabulary/middlewares"
 	"vocabulary/repositories"
 	"vocabulary/services"
+	"vocabulary/storage"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 func RegisterAPIRoutes(router *gin.Engine, db *gorm.DB) {
+	router.StaticFS("/uploads/avatars", gin.Dir(storage.AvatarDirectory(), false))
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",

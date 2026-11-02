@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 const (
 	UserTypeGuest      = "guest"
@@ -46,9 +49,11 @@ type CreateGuestUserRequest struct {
 }
 
 type RegisterRequest struct {
-	DisplayName string `json:"display_name" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=8"`
+	DisplayName     string                `json:"display_name" form:"display_name" binding:"required,max=100"`
+	Email           string                `json:"email" form:"email" binding:"required,email,max=255"`
+	Password        string                `json:"password" form:"password" binding:"required,min=8"`
+	ConfirmPassword string                `json:"confirm_password" form:"confirm_password" binding:"required,eqfield=Password"`
+	ProfilePicture  *multipart.FileHeader `json:"-" form:"profile_picture"`
 }
 
 type LoginRequest struct {
@@ -57,10 +62,12 @@ type LoginRequest struct {
 }
 
 type UserResponse struct {
-	ID          uint    `json:"id"`
-	DisplayName string  `json:"display_name"`
-	AvatarURL   *string `json:"avatar_url,omitempty"`
-	UserType    string  `json:"user_type"`
+	ID             uint    `json:"id"`
+	DisplayName    string  `json:"display_name"`
+	Email          *string `json:"email"`
+	ProfilePicture *string `json:"profile_picture"`
+	AvatarURL      *string `json:"avatar_url,omitempty"`
+	UserType       string  `json:"user_type"`
 }
 
 type UserGameStats struct {
@@ -77,9 +84,10 @@ type AuthResponse struct {
 
 func NewUserResponse(user User) UserResponse {
 	return UserResponse{
-		ID:          user.ID,
-		DisplayName: user.DisplayName,
-		AvatarURL:   user.AvatarURL,
-		UserType:    user.UserType,
+		ID:             user.ID,
+		DisplayName:    user.DisplayName,
+		ProfilePicture: user.AvatarURL,
+		AvatarURL:      user.AvatarURL,
+		UserType:       user.UserType,
 	}
 }

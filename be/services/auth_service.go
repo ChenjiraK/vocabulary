@@ -18,6 +18,7 @@ import (
 
 	"vocabulary/models"
 	"vocabulary/repositories"
+	"vocabulary/storage"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -44,12 +45,14 @@ type AuthService interface {
 
 type authService struct {
 	userRepository repositories.UserRepository
+	avatarStore    storage.AvatarStore
 	httpClient     *http.Client
 }
 
 func NewAuthService(userRepository repositories.UserRepository) AuthService {
 	return &authService{
 		userRepository: userRepository,
+		avatarStore:    &storage.LocalAvatarStore{Directory: storage.AvatarDirectory()},
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
@@ -69,12 +72,16 @@ func (s *authService) CreateGuestUser(ctx context.Context, displayName string) (
 }
 
 func (s *authService) Register(ctx context.Context, request models.RegisterRequest) (*models.AuthResponse, error) {
-	email := normalizeEmail(request.Email)
-	existingPasswordIdentity, err := s.userRepository.FindIdentityByProviderAndEmail(ctx, models.AuthProviderPassword, email)
-	if err != nil {
-		return nil, fmt.Errorf("find password identity: %w", err)
+	if err := ValidateRegisterRequest(&request); err != nil {
+		return nil, err
 	}
-	if existingPasswordIdentity != nil {
+	email := normalizeEmail(request.Email)
+	existingIdentity, err := s.userRepository.FindIdentityByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("find identity by email: %w", err)
+	}
+	// Adding a password to a social account requires authenticated account linking.
+	if existingIdentity != nil {
 		return nil, ErrDuplicateEmail
 	}
 
@@ -90,35 +97,35 @@ func (s *authService) Register(ctx context.Context, request models.RegisterReque
 		PasswordHash:  &passwordHashString,
 	}
 
-	existingEmailIdentity, err := s.userRepository.FindIdentityByEmail(ctx, email)
-	if err != nil {
-		return nil, fmt.Errorf("find identity by email: %w", err)
-	}
-	if existingEmailIdentity != nil {
-		user := existingEmailIdentity.User
-		user.DisplayName = displayNameOrFallback(request.DisplayName, user.DisplayName)
-		user.UserType = models.UserTypeRegistered
-		if err := s.userRepository.UpdateUser(ctx, &user); err != nil {
-			return nil, fmt.Errorf("update user: %w", err)
-		}
-
-		identity.UserID = user.ID
-		if err := s.userRepository.CreateIdentity(ctx, identity); err != nil {
-			return nil, fmt.Errorf("create password identity: %w", err)
-		}
-
-		return s.authResponse("registered successfully", user)
-	}
-
 	user := &models.User{
 		DisplayName: strings.TrimSpace(request.DisplayName),
 		UserType:    models.UserTypeRegistered,
 	}
+	if request.ProfilePicture != nil {
+		path, err := s.avatarStore.Save(request.ProfilePicture)
+		if err != nil {
+			return nil, fmt.Errorf("save profile picture: %w", err)
+		}
+		user.AvatarURL = &path
+	}
 	if err := s.userRepository.CreateUserWithIdentity(ctx, user, identity); err != nil {
+		if user.AvatarURL != nil {
+			if cleanupErr := s.avatarStore.Delete(*user.AvatarURL); cleanupErr != nil {
+				return nil, errors.Join(fmt.Errorf("create registered user: %w", err), fmt.Errorf("delete profile picture: %w", cleanupErr))
+			}
+		}
+		if errors.Is(err, repositories.ErrDuplicateIdentity) {
+			return nil, ErrDuplicateEmail
+		}
 		return nil, fmt.Errorf("create registered user: %w", err)
 	}
 
-	return s.authResponse("registered successfully", *user)
+	response, err := s.authResponse("registered successfully", *user)
+	if err != nil {
+		return nil, err
+	}
+	response.User.Email = identity.Email
+	return response, nil
 }
 
 func (s *authService) Login(ctx context.Context, request models.LoginRequest) (*models.AuthResponse, error) {
@@ -144,6 +151,7 @@ func (s *authService) Login(ctx context.Context, request models.LoginRequest) (*
 		return nil, err
 	}
 	response.UserGameStats = stats
+	response.User.Email = identity.Email
 	return response, nil
 }
 
@@ -155,14 +163,20 @@ func (s *authService) GetCurrentUser(ctx context.Context, userID uint) (*models.
 	if user == nil {
 		return nil, ErrUserNotFound
 	}
+	email, err := s.userRepository.FindEmailByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("find current user email: %w", err)
+	}
 
 	stats, err := s.userRepository.GetUserGameStats(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user game stats: %w", err)
 	}
+	userResponse := newAuthUserResponse(*user)
+	userResponse.Email = email
 	return &models.AuthResponse{
 		Message:       "current user retrieved successfully",
-		User:          models.NewUserResponse(*user),
+		User:          userResponse,
 		UserGameStats: stats,
 	}, nil
 }
@@ -405,8 +419,18 @@ func (s *authService) authResponse(message string, user models.User) (*models.Au
 	return &models.AuthResponse{
 		Message: message,
 		Token:   token,
-		User:    models.NewUserResponse(user),
+		User:    newAuthUserResponse(user),
 	}, nil
+}
+
+func newAuthUserResponse(user models.User) models.UserResponse {
+	response := models.NewUserResponse(user)
+	if user.AvatarURL != nil {
+		publicURL := storage.PublicAvatarURL(*user.AvatarURL)
+		response.AvatarURL = &publicURL
+		response.ProfilePicture = &publicURL
+	}
+	return response
 }
 
 func (s *authService) postFormJSON(ctx context.Context, endpoint string, form url.Values, target any) error {

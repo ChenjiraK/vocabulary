@@ -11,6 +11,7 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import ProfilePicture from "./ProfilePicture";
+import { register as apiRegister } from "@/app/services/auth.service";
 
 export type RegisterFormValues = {
   profilePicture: File | null;
@@ -49,9 +50,14 @@ export default function FormRegister() {
     formState: { errors, isSubmitting },
   } = form;
 
-  const onSubmit: SubmitHandler<RegisterFormValues> = () => {
+  const onSubmit: SubmitHandler<RegisterFormValues> = async (values) => {
     setNotice("");
-    // TODO: Connect the registration API using the validated form values.
+    try {
+      await apiRegister(values);
+      setNotice("Registration successful!");
+    } catch {
+      setNotice("Registration failed. Please try again.");
+    }
   };
 
   return (

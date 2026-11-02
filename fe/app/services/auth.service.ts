@@ -63,11 +63,27 @@ export async function getCurrentUser() {
 }
 
 export async function register(payload: {
-  avatar_url?: string;
-  display_name: string;
+  profilePicture?: File | null;
+  displayName: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }) {
-  const { data } = await api.post<any>("/auth/register", { ...payload });
+  const formData = new FormData();
+  formData.append("display_name", payload.displayName);
+  if (payload.profilePicture) {
+    formData.append("profile_picture", payload.profilePicture);
+  }
+  formData.append("email", payload.email);
+  formData.append("password", payload.password);
+  formData.append("confirm_password", payload.confirmPassword);
+
+  const { data } = await api.post<AuthLoginResponse>(
+    "/auth/register",
+    formData,
+    {
+      headers: { "Content-Type": undefined },
+    },
+  );
   return data;
 }

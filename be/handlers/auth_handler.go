@@ -9,8 +9,10 @@ import (
 	"vocabulary/middlewares"
 	"vocabulary/models"
 	"vocabulary/services"
+	"vocabulary/storage"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type AuthHandler struct {
@@ -41,14 +43,58 @@ func (h *AuthHandler) CreateGuestUser(c *gin.Context) {
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
+	switch c.ContentType() {
+	case "application/json", "application/x-www-form-urlencoded", "multipart/form-data":
+	default:
+		c.JSON(http.StatusUnsupportedMediaType, gin.H{"message": "use application/json or form data"})
+		return
+	}
+	const maxRegistrationBytes = storage.MaxAvatarBytes + (64 << 10)
+	if c.Request.ContentLength > maxRegistrationBytes {
+		c.JSON(http.StatusRequestEntityTooLarge, gin.H{"message": "registration payload is too large"})
+		return
+	}
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxRegistrationBytes)
+	defer func() {
+		if c.Request.MultipartForm != nil {
+			_ = c.Request.MultipartForm.RemoveAll()
+		}
+	}()
+
 	var request models.RegisterRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "display_name, email, and password are required"})
+	if err := c.ShouldBind(&request); err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			c.JSON(http.StatusRequestEntityTooLarge, gin.H{"message": "registration payload is too large"})
+			return
+		}
+		var validationErrors validator.ValidationErrors
+		if !errors.As(err, &validationErrors) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "invalid registration data"})
+			return
+		}
+		// Revalidate after normalization so surrounding spaces in names/emails work.
+	}
+	if err := services.ValidateRegisterRequest(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
 	response, err := h.authService.Register(c.Request.Context(), request)
 	if err != nil {
+		var validationError *services.RegistrationValidationError
+		if errors.As(err, &validationError) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": validationError.Message})
+			return
+		}
+		if errors.Is(err, storage.ErrAvatarTooLarge) {
+			c.JSON(http.StatusRequestEntityTooLarge, gin.H{"message": storage.ErrAvatarTooLarge.Error()})
+			return
+		}
+		if errors.Is(err, storage.ErrInvalidAvatar) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": storage.ErrInvalidAvatar.Error()})
+			return
+		}
 		if errors.Is(err, services.ErrDuplicateEmail) {
 			c.JSON(http.StatusConflict, gin.H{"message": "email already exists"})
 			return

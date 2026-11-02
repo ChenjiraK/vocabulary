@@ -55,9 +55,10 @@ func TestRegisterReturnsDuplicateEmailForExistingPasswordIdentity(t *testing.T) 
 	service := NewAuthService(repository)
 
 	_, err := service.Register(context.Background(), models.RegisterRequest{
-		DisplayName: "Player",
-		Email:       email,
-		Password:    "password123",
+		DisplayName:     "Player",
+		Email:           email,
+		Password:        "password123",
+		ConfirmPassword: "password123",
 	})
 
 	if err != ErrDuplicateEmail {
@@ -65,7 +66,7 @@ func TestRegisterReturnsDuplicateEmailForExistingPasswordIdentity(t *testing.T) 
 	}
 }
 
-func TestRegisterLinksPasswordIdentityToExistingSocialUser(t *testing.T) {
+func TestRegisterRejectsEmailOfExistingSocialUser(t *testing.T) {
 	email := "player@example.com"
 	repository := &fakeUserRepository{
 		users: []models.User{
@@ -90,23 +91,17 @@ func TestRegisterLinksPasswordIdentityToExistingSocialUser(t *testing.T) {
 	}
 	service := NewAuthService(repository)
 
-	response, err := service.Register(context.Background(), models.RegisterRequest{
-		DisplayName: "Password Player",
-		Email:       email,
-		Password:    "password123",
+	_, err := service.Register(context.Background(), models.RegisterRequest{
+		DisplayName:     "Password Player",
+		Email:           email,
+		Password:        "password123",
+		ConfirmPassword: "password123",
 	})
-	if err != nil {
-		t.Fatalf("register: %v", err)
+	if err != ErrDuplicateEmail {
+		t.Fatalf("expected duplicate email error, got %v", err)
 	}
-
-	if response.User.ID != 1 {
-		t.Fatalf("expected linked user ID 1, got %d", response.User.ID)
-	}
-	if len(repository.createdIdentities) != 1 {
-		t.Fatalf("expected one created identity, got %d", len(repository.createdIdentities))
-	}
-	if repository.createdIdentities[0].Provider != models.AuthProviderPassword {
-		t.Fatalf("expected password provider, got %q", repository.createdIdentities[0].Provider)
+	if len(repository.createdIdentities) != 0 || len(repository.updatedUsers) != 0 || len(repository.createdUsersWithIdentity) != 0 {
+		t.Fatal("registration modified an existing social account")
 	}
 }
 
@@ -225,6 +220,7 @@ func TestPasswordLoginValidatesBcryptHash(t *testing.T) {
 }
 
 type fakeUserRepository struct {
+	createError              error
 	users                    []models.User
 	identities               []models.UserAuthIdentity
 	createdUsers             []models.User
@@ -246,6 +242,9 @@ func (r *fakeUserRepository) CreateUser(ctx context.Context, user *models.User) 
 }
 
 func (r *fakeUserRepository) CreateUserWithIdentity(ctx context.Context, user *models.User, identity *models.UserAuthIdentity) error {
+	if r.createError != nil {
+		return r.createError
+	}
 	user.ID = r.nextID()
 	identity.UserID = user.ID
 	identity.User = *user
@@ -274,6 +273,19 @@ func (r *fakeUserRepository) FindUserByID(ctx context.Context, id uint) (*models
 	}
 
 	return nil, nil
+}
+
+func (r *fakeUserRepository) FindEmailByUserID(ctx context.Context, userID uint) (*string, error) {
+	var email *string
+	for _, identity := range r.identities {
+		if identity.UserID == userID && identity.Email != nil {
+			email = identity.Email
+			if identity.Provider == models.AuthProviderPassword {
+				return email, nil
+			}
+		}
+	}
+	return email, nil
 }
 
 func (r *fakeUserRepository) FindIdentityByProviderAndEmail(ctx context.Context, provider string, email string) (*models.UserAuthIdentity, error) {

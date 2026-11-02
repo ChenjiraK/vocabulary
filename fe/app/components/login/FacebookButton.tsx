@@ -3,18 +3,23 @@
 import Image from "next/image";
 import { Button } from "@mui/material";
 import { loginWithFacebook } from "@/app/services/auth.service";
+type FacebookButtonProps = {
+  disabled?: boolean;
+};
 
-export default function FacebookButton() {
+export default function FacebookButton({ disabled }: FacebookButtonProps) {
   async function LoginWithFacebook() {
     const data = await loginWithFacebook();
     console.log(data);
   }
 
   return (
-    <div>
+    <div className={disabled ? "cursor-not-allowed" : undefined}>
       <Button
         variant="outlined"
         onClick={LoginWithFacebook}
+        disabled={disabled}
+        className={disabled ? "opacity-60" : undefined}
         sx={{
           width: "100%",
           borderRadius: "40px",
