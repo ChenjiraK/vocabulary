@@ -16,7 +16,7 @@ import FacebookButton from "@/app/components/login/FacebookButton";
 import { useModal } from "@/app/hooks/useModal";
 
 export default function LoginPage() {
-  const { showErrorModal } = useModal();
+  const { showErrorModal, showLoadingModal, hideLoadingModal } = useModal();
   const router = useRouter();
   const setLoginData = useAuthStore((state) => state.setLoginData);
   const [pending, setPending] = useState<
@@ -32,9 +32,13 @@ export default function LoginPage() {
     setError("");
     setNotice("");
     setPending("password");
+    showLoadingModal({
+      title: "Logging in…",
+      message: "Just a moment while we log you in.",
+    });
     try {
       const data = await loginWithPassword({
-        email: String(form.get("username")).trim(),
+        email: String(form.get("email")).trim(),
         password: String(form.get("password")),
       });
       setLoginData(data);
@@ -47,6 +51,7 @@ export default function LoginPage() {
         buttonText: "Try Again",
       });
     } finally {
+      hideLoadingModal();
       setPending(null);
     }
   }
@@ -56,6 +61,10 @@ export default function LoginPage() {
     setError("");
     setNotice("");
     setPending(provider);
+    showLoadingModal({
+      title: "Logging in…",
+      message: `Connecting to ${provider === "google" ? "Google" : "Facebook"}.`,
+    });
     try {
       const data = await (provider === "google"
         ? loginWithGoogle()
@@ -65,6 +74,7 @@ export default function LoginPage() {
         throw new Error("Invalid login URL");
       window.location.assign(url.href);
     } catch {
+      hideLoadingModal();
       setError(
         `Unable to connect to ${provider === "google" ? "Google" : "Facebook"}. Please try again.`
       );
@@ -123,7 +133,10 @@ export default function LoginPage() {
                 <span className="text-sm text-gray-500">or</span>
                 <div className="flex-1 border-t border-gray-300" />
               </div>
-              <FormEmailPassword onSubmit={handleSubmit} />
+              <FormEmailPassword
+                onSubmit={handleSubmit}
+                pending={pending !== null}
+              />
             </div>
           </section>
         </main>

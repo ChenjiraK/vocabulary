@@ -9,9 +9,14 @@ export type ModalOptions = {
   onClose?: () => void;
 };
 
+export type LoadingModalOptions = Pick<ModalOptions, "title" | "message">;
+
 type ModalContextValue = {
   showSuccessModal: (options?: ModalOptions) => void;
   showErrorModal: (options?: ModalOptions) => void;
+  showLoadingModal: (options?: LoadingModalOptions) => void;
+  hideLoadingModal: () => void;
+  isLoading: boolean;
   closeModal: () => void;
 };
 

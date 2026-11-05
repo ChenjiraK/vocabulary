@@ -4,10 +4,7 @@ import { type FormEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faLock } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-regular-svg-icons";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { loginWithPassword } from "@/app/services/auth.service";
-import { useAuthStore } from "@/app/stores/auth.store";
 
 interface FormEmailPasswordProps {
   onBack?: () => void;
@@ -24,12 +21,7 @@ export default function FormEmailPassword({
   const [email, setEmail] = useState("test@example.com");
   const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
-  const setLoginData = useAuthStore((state) => state.setLoginData);
-
-  const isPending = pending || isLoading;
 
   //NOTE: className="h-[clamp(20px,3vw,31px)]! w-[clamp(18px,2.7vw,28px)]!"
   //ความสูงจะปรับตาม 3vw (3% ของความกว้าง viewport) แต่ต้องไม่ต่ำกว่า 20px และไม่เกิน 31px บังคับใช้ !important เพื่อเพิ่มความสำคัญของ CSS
@@ -38,7 +30,7 @@ export default function FormEmailPassword({
       <form
         className="flex flex-col [&_button:disabled]:cursor-wait [&_button:disabled]:opacity-60 [&_button:focus-visible]:outline-3 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-[#668dcc] motion-reduce:[&_button]:transition-none"
         onSubmit={onSubmit}
-        aria-busy={isPending}
+        aria-busy={pending}
       >
         <div>
           <label
@@ -64,7 +56,7 @@ export default function FormEmailPassword({
               className="min-w-0 w-full self-stretch rounded-[inherit] border-0 bg-transparent px-3 py-3 text-[#132b50] outline-none placeholder:text-[#969ba5] placeholder:opacity-100"
               placeholder="Enter your email"
               required
-              disabled={isPending}
+              disabled={pending}
             />
           </div>
         </div>
@@ -90,7 +82,7 @@ export default function FormEmailPassword({
               className="min-w-0 w-full self-stretch rounded-[inherit] border-0 bg-transparent px-3 py-3 text-[#132b50] outline-none placeholder:text-[#969ba5] placeholder:opacity-100"
               placeholder="Enter your password"
               required
-              disabled={isPending}
+              disabled={pending}
             />
             <button
               type="button"
@@ -98,7 +90,7 @@ export default function FormEmailPassword({
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
               aria-controls="password"
-              disabled={isPending}
+              disabled={pending}
               onClick={() => setShowPassword((visible) => !visible)}
             >
               <FontAwesomeIcon
@@ -111,7 +103,7 @@ export default function FormEmailPassword({
         <button
           type="button"
           className="mt-3.5 self-end border-0 bg-transparent p-0 text-[12px] leading-[1.3] text-[#0861db] hover:underline"
-          disabled={isPending}
+          disabled={pending}
           onClick={() =>
             setNotice
               ? setNotice("Password reset is not available yet.")
@@ -128,13 +120,13 @@ export default function FormEmailPassword({
         <button
           type="submit"
           className="mt-5 h-11 w-full rounded-xl border border-[#142e5a] bg-[linear-gradient(110deg,#1a3766,#19335e)] font-bold text-white shadow-[0_3px_5px_#0c21490a] transition-[background,transform] duration-180 hover:bg-[#102a53] hover:bg-none active:translate-y-px"
-          disabled={isPending}
+          disabled={pending}
         >
-          {isLoading ? "Logging in…" : "Log In"}
+          {pending ? "Logging in…" : "Log In"}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-[#737784]">
-        Don't have account ?
+        Don&apos;t have account ?
         <Link
           href="/register"
           className="ml-1 font-semibold text-[#0861db]! hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"

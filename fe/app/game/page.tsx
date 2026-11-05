@@ -4,14 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/app/stores/auth.store";
 import MainPage from "../components/ui/MainPage";
 import Loading from "@/app/components/ui/Loading";
-import LoadingModal from "@/app/components/modal/LoadingModal";
 import { useModal } from "@/app/hooks/useModal";
 import WordInput from "./WordInput";
 import type { GameVocabResponse } from "@/app/type/GameType";
 import { getVocab, submitVocabAnswer } from "@/app/services/game.service";
 
 export default function GamePage() {
-  const { showSuccessModal, showErrorModal } = useModal();
+  const {
+    showSuccessModal,
+    showErrorModal,
+    showLoadingModal,
+    hideLoadingModal,
+  } = useModal();
   const [gameResponse, setGameResponse] = useState<GameVocabResponse | null>(
     null,
   );
@@ -54,6 +58,10 @@ export default function GamePage() {
     submitting.current = true;
     setIsSubmitting(true);
     setError(null);
+    showLoadingModal({
+      title: "Checking your answer…",
+      message: "Just a moment while we check your word.",
+    });
     try {
       const result = await submitVocabAnswer(gameResponse.id, inputWord);
       if (result.is_correct) {
@@ -73,6 +81,7 @@ export default function GamePage() {
     } catch {
       setError("Unable to check your answer. Press Enter to try again.");
     } finally {
+      hideLoadingModal();
       submitting.current = false;
       setIsSubmitting(false);
     }
@@ -133,11 +142,6 @@ export default function GamePage() {
           {error}
         </p>
       )}
-      <LoadingModal
-        isOpen={isSubmitting}
-        title="Checking your answer…"
-        message="Just a moment while we check your word."
-      />
     </>
   );
 }

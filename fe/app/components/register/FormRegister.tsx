@@ -37,7 +37,13 @@ export default function FormRegister() {
     password: false,
     confirmPassword: false,
   });
-  const { showSuccessModal, showErrorModal } = useModal();
+  const {
+    showSuccessModal,
+    showErrorModal,
+    showLoadingModal,
+    hideLoadingModal,
+    isLoading,
+  } = useModal();
   const {
     register,
     handleSubmit,
@@ -48,6 +54,11 @@ export default function FormRegister() {
   const clickCreateAccount: SubmitHandler<RegisterFormValues> = async (
     values
   ) => {
+    if (isLoading) return;
+    showLoadingModal({
+      title: "Creating your account…",
+      message: "Just a moment while we create your account.",
+    });
     try {
       await apiRegister(values);
       showSuccessModal({
@@ -55,6 +66,10 @@ export default function FormRegister() {
         message: "Your account has been created successfully.",
         buttonText: "Continue",
         onClose: async () => {
+          showLoadingModal({
+            title: "Logging in…",
+            message: "Just a moment while we log you in.",
+          });
           try {
             await apiLoginPassword();
             window.location.href = "/welcome";
@@ -65,6 +80,8 @@ export default function FormRegister() {
                 "Unable to log in after registration. Please try logging in manually.",
               buttonText: "Try Again",
             });
+          } finally {
+            hideLoadingModal();
           }
         },
       });
@@ -82,6 +99,8 @@ export default function FormRegister() {
           buttonText: "Try Again",
         });
       }
+    } finally {
+      hideLoadingModal();
     }
   };
 
@@ -103,6 +122,7 @@ export default function FormRegister() {
     <form
       noValidate
       onSubmit={handleSubmit(clickCreateAccount)}
+      aria-busy={isSubmitting || isLoading}
       onChange={() => {
         setNotice("");
       }}
@@ -262,7 +282,7 @@ export default function FormRegister() {
       ))}
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || isLoading}
         className="min-h-12 mt-3 w-full rounded-xl bg-primary-blue px-4 py-3 font-bold text-white shadow-sm transition-colors hover:bg-[#294777] active:bg-[#102a53] motion-reduce:transition-none"
       >
         Create account
