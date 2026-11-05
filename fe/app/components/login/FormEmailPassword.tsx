@@ -13,11 +13,13 @@ interface FormEmailPasswordProps {
   onBack?: () => void;
   setNotice?: (message: string) => void;
   pending?: boolean;
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
 }
 
 export default function FormEmailPassword({
   pending = false,
   setNotice,
+  onSubmit,
 }: FormEmailPasswordProps) {
   const [email, setEmail] = useState("test@example.com");
   const [password, setPassword] = useState("password");
@@ -29,35 +31,13 @@ export default function FormEmailPassword({
 
   const isPending = pending || isLoading;
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isPending) return;
-    setError("");
-    setNotice?.("");
-    setIsLoading(true);
-
-    try {
-      const payload = {
-        email: email.trim(),
-        password,
-      };
-      const data = await loginWithPassword(payload);
-      setLoginData(data);
-      router.push("/game");
-    } catch (err) {
-      console.error(err);
-      setError("Login failed. Please check your email and password.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
   //NOTE: className="h-[clamp(20px,3vw,31px)]! w-[clamp(18px,2.7vw,28px)]!"
   //ความสูงจะปรับตาม 3vw (3% ของความกว้าง viewport) แต่ต้องไม่ต่ำกว่า 20px และไม่เกิน 31px บังคับใช้ !important เพื่อเพิ่มความสำคัญของ CSS
   return (
     <div>
       <form
         className="flex flex-col [&_button:disabled]:cursor-wait [&_button:disabled]:opacity-60 [&_button:focus-visible]:outline-3 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-[#668dcc] motion-reduce:[&_button]:transition-none"
-        onSubmit={handleSubmit}
+        onSubmit={onSubmit}
         aria-busy={isPending}
       >
         <div>

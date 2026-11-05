@@ -4,6 +4,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import ModalProvider from "@/app/components/modal/ModalProvider";
 
 const theme = createTheme({
   palette: {
@@ -43,7 +44,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          {children}
+          <ModalProvider>{children}</ModalProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </AppRouterCacheProvider>

@@ -1,54 +1,76 @@
-import Image from "next/image";
+"use client";
+
+import { useId } from "react";
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Typography,
 } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEnvelopeCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import MainButton from "@/app/components/ui/MainButton";
 
 type ModalProps = {
   isOpen: boolean;
-  onClose?: () => void;
-  onSubmit?: () => void;
-  title: string;
+  onClose: () => void;
+  title?: string;
+  message?: string;
+  buttonText?: string;
 };
-export default function SuccessModal({ isOpen, onClose,onSubmit, title }: ModalProps) {
+export default function SuccessModal({
+  isOpen,
+  onClose,
+  title = "Success!",
+  message = "Your action was completed successfully.",
+  buttonText = "Close",
+}: ModalProps) {
+  const id = useId();
+  const titleId = `${id}-title`;
+  const descriptionId = `${id}-description`;
+
   return (
     <div>
       <Dialog
         open={isOpen}
         onClose={onClose}
-        aria-labelledby="submission-result-title"
-        aria-describedby="submission-result-description"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         fullWidth
         maxWidth="xs"
       >
         <DialogTitle
-          id="submission-result-title"
-          className="text-success text-center font-bold"
-          sx={{ fontSize: "32px" }}
+          id={titleId}
+          sx={{
+            color: "success.main",
+            textAlign: "center",
+            fontWeight: 700,
+            fontSize: 32,
+          }}
         >
-          {title || "Congratulations!"}
+          {title}
         </DialogTitle>
         <DialogContent>
-          <div className="flex justify-center">
-            <Image
-              src="/images/star-icon.gif"
-              alt="Correct answer"
-              width={200}
-              height={200}
-              unoptimized
-            />
+          <div className="flex flex-col items-center justify-center">
+            <span className="text-success mt-3">
+              <FontAwesomeIcon
+                icon={faEnvelopeCircleCheck}
+                className="text-9xl"
+                aria-hidden="true"
+              />
+            </span>
           </div>
+          <Typography
+            id={descriptionId}
+            color="text.secondary"
+            className="pt-7 text-center text-lg font-semibold"
+          >
+            {message}
+          </Typography>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: "center", gap: 1, margin: "20px" }}>
-          <Button variant="contained" onClick={onSubmit} autoFocus sx={{ width: "100%", borderRadius:"40px" }} color="success">
-            Continue
-          </Button>
-          <Button variant="outlined" onClick={onClose} autoFocus sx={{ width: "100%", borderRadius:"40px" }} color="success">
-            Close
-          </Button>
+        <DialogActions sx={{ justifyContent: "center", p: 2.5 }}>
+          <MainButton onClick={onClose}>{buttonText}</MainButton>
         </DialogActions>
       </Dialog>
     </div>

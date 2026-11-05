@@ -1,11 +1,24 @@
 "use client";
 
+import { FormProvider, useForm } from "react-hook-form";
 import Image from "next/image";
 import Link from "next/link";
 import MainPage from "@/app/components/ui/MainPage";
-import FormRegister from "@/app/components/register/FormRegister";
+import FormRegister, {
+  type RegisterFormValues,
+} from "@/app/components/register/FormRegister";
 
 export default function RegisterPage() {
+  const form = useForm<RegisterFormValues>({
+    mode: "onChange",
+    defaultValues: {
+      profilePicture: null,
+      displayName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
   return (
     <MainPage>
       <div className="relative flex min-h-screen flex-col items-center justify-center bg-page px-4 py-10 text-primary-blue sm:px-8 sm:py-14">
@@ -54,7 +67,9 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <FormRegister />
+          <FormProvider {...form}>
+            <FormRegister />
+          </FormProvider>
           <p className="mt-6 text-center text-sm text-[#737784]">
             Already have an account?{" "}
             <Link

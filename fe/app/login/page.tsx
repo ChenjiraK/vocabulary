@@ -13,8 +13,10 @@ import MainPage from "@/app/components/ui/MainPage";
 import FormEmailPassword from "@/app/components/login/FormEmailPassword";
 import GoogleButton from "@/app/components/login/GoogleButton";
 import FacebookButton from "@/app/components/login/FacebookButton";
+import { useModal } from "@/app/hooks/useModal";
 
 export default function LoginPage() {
+  const { showErrorModal } = useModal();
   const router = useRouter();
   const setLoginData = useAuthStore((state) => state.setLoginData);
   const [pending, setPending] = useState<
@@ -38,7 +40,12 @@ export default function LoginPage() {
       setLoginData(data);
       router.push("/game");
     } catch {
-      setError("Unable to log in. Please check your details and try again.");
+      showErrorModal({
+        title: "Login failed",
+        message:
+          "Unable to log in. Please check your email or password and try again.",
+        buttonText: "Try Again",
+      });
     } finally {
       setPending(null);
     }
@@ -116,7 +123,7 @@ export default function LoginPage() {
                 <span className="text-sm text-gray-500">or</span>
                 <div className="flex-1 border-t border-gray-300" />
               </div>
-              <FormEmailPassword />
+              <FormEmailPassword onSubmit={handleSubmit} />
             </div>
           </section>
         </main>

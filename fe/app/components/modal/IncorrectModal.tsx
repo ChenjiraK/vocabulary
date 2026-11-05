@@ -2,7 +2,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Typography,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

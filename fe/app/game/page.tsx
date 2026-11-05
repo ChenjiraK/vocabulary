@@ -3,19 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/app/stores/auth.store";
 import MainPage from "../components/ui/MainPage";
-import IncorrectModal from "../components/modal/IncorrectModal";
-import SuccessModal from "../components/modal/SuccessModal";
+import Loading from "@/app/components/ui/Loading";
+import LoadingModal from "@/app/components/modal/LoadingModal";
+import { useModal } from "@/app/hooks/useModal";
 import WordInput from "./WordInput";
 import type { GameVocabResponse } from "@/app/type/GameType";
 import { getVocab, submitVocabAnswer } from "@/app/services/game.service";
 
-type SubmissionResult = "correct" | "incorrect" | null;
-
 export default function GamePage() {
-  const [submissionResult, setSubmissionResult] =
-    useState<SubmissionResult>(null);
+  const { showSuccessModal, showErrorModal } = useModal();
   const [gameResponse, setGameResponse] = useState<GameVocabResponse | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,7 +46,7 @@ export default function GamePage() {
     if (
       !gameResponse ||
       submitting.current ||
-      submissionResult === "correct" ||
+      gameResponse.status === "success" ||
       inputWord.length !== gameResponse.length_of_word
     )
       return;
@@ -58,7 +56,16 @@ export default function GamePage() {
     setError(null);
     try {
       const result = await submitVocabAnswer(gameResponse.id, inputWord);
-      setSubmissionResult(result.is_correct ? "correct" : "incorrect");
+      if (result.is_correct) {
+        showSuccessModal({
+          title: "Great job!",
+          message: "That's the correct word!",
+        });
+      } else {
+        showErrorModal({
+          buttonText: "Try Again",
+        });
+      }
       setGameResponse({
         ...gameResponse,
         status: result.is_correct ? "success" : "failed",
@@ -72,7 +79,6 @@ export default function GamePage() {
   }
 
   function handleNextWord() {
-    setSubmissionResult(null);
     setGameResponse(null);
     setError(null);
     setIsLoading(true);
@@ -88,9 +94,15 @@ export default function GamePage() {
     <>
       {isLoading ? (
         <MainPage>
-          <p role="status" className="p-8 text-center">
-            Loading word...
-          </p>
+          <div
+            className="grid min-h-screen place-items-center px-4 py-10"
+            aria-busy="true"
+          >
+            <Loading
+              title="Finding your next word…"
+              message="A fresh challenge is on its way. Get ready to put your vocab to the test!"
+            />
+          </div>
         </MainPage>
       ) : gameResponse ? (
         <fieldset disabled={isSubmitting} className="m-0 min-w-0 border-0 p-0">
@@ -121,20 +133,10 @@ export default function GamePage() {
           {error}
         </p>
       )}
-      {isSubmitting && (
-        <p role="status" className="p-4 text-center">
-          Checking answer...
-        </p>
-      )}
-      <SuccessModal
-        isOpen={submissionResult === "correct"}
-        onSubmit={handleNextWord}
-        onClose={() => setSubmissionResult(null)}
-        title="Great job!"
-      />
-      <IncorrectModal
-        isOpen={submissionResult === "incorrect"}
-        onClose={() => setSubmissionResult(null)}
+      <LoadingModal
+        isOpen={isSubmitting}
+        title="Checking your answer…"
+        message="Just a moment while we check your word."
       />
     </>
   );
